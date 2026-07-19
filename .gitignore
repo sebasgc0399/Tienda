@@ -1,0 +1,6 @@
+# Local AI tooling cache
+.atl/
+
+# Environment variables (see CLAUDE.md guardrails)
+.env
+.env.*
