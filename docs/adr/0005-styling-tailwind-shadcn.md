@@ -14,7 +14,7 @@ Las referencias de diseño del cliente (The North Face, Clemont, Apple) exigen t
 
 ## Decisión
 
-Se usa Tailwind CSS como sistema de utilidades, junto con shadcn/ui para los componentes de interfaz.
+Se usa Tailwind CSS v4 (CSS-first, sin `tailwind.config.ts` por defecto) como sistema de utilidades, junto con shadcn/ui para los componentes de interfaz.
 
 ## Alternativas consideradas
 

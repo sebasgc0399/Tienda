@@ -1,4 +1,4 @@
-# ADR-0004: Despliegue en Vercel (free tier)
+# ADR-0004: Despliegue en Vercel
 
 ## Estado
 
@@ -14,7 +14,7 @@ Next.js está optimizado para desplegarse en Vercel, con integración nativa a G
 
 ## Decisión
 
-El proyecto se despliega en Vercel, usando el tier gratuito.
+El proyecto se despliega en Vercel. Durante el desarrollo y antes del lanzamiento público, Estevan puede usar el tier gratuito (Hobby) para sus despliegues personales de desarrollo y preview. Una vez la tienda esté públicamente en vivo anunciando la venta de productos, el proyecto debe correr en Vercel Pro: las Fair Use Guidelines de Vercel restringen Hobby a uso personal no comercial y listan explícitamente "advertising the sale of a product or service" como uso descalificante, sin importar el volumen de tráfico.
 
 ## Alternativas consideradas
 
@@ -24,6 +24,6 @@ El proyecto se despliega en Vercel, usando el tier gratuito.
 
 - Deploy automático en cada push a `main` y preview deployments por pull request, sin configuración de CI/CD adicional.
 - Estevan puede desplegar su fork de forma independiente, sin acceso a infraestructura compartida.
-- El proyecto queda atado a los límites y comportamiento del tier gratuito de Vercel.
+- El proyecto queda atado a los límites y comportamiento del tier de Vercel elegido en cada etapa (Hobby en desarrollo, Pro en producción pública).
 
-> **Nota:** antes de pasar a producción, confirmar los límites vigentes del tier gratuito de Vercel (ancho de banda, invocaciones de funciones, build minutes), ya que pueden cambiar y afectar la viabilidad del plan a mediano plazo.
+> **Nota:** Vercel Hobby está limitado por sus Fair Use Guidelines a uso personal no comercial; un catálogo público que anuncia la venta de productos califica como uso comercial ("advertising the sale of a product or service") y requiere Vercel Pro, sin importar el tráfico. Mantener Hobby solo para desarrollo/preview antes del lanzamiento; migrar a Pro antes de anunciar la tienda públicamente — un sitio comercial en vivo sobre Hobby queda sujeto a pausa o baja según la política, no es solo un pedido de upgrade. Además, confirmar los límites vigentes del tier elegido (ancho de banda, invocaciones de funciones, build minutes) antes de pasar a producción, ya que pueden cambiar y afectar la viabilidad del plan a mediano plazo.

@@ -30,7 +30,7 @@ El carrito permite a la clienta armar un pedido de productos y enviarlo a la due
 | RF-5 | Subtotal por ítem | `quantity * price`, con `price` en COP entero (ver data-model.md). |
 | RF-6 | Total del carrito | Suma de los subtotales de todos los ítems. |
 | RF-7 | Botón "Pedir por WhatsApp" | Construye el mensaje (formato abajo) y abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensaje)>` en una pestaña nueva. |
-| RF-8 | Número de WhatsApp único vía env var | El número sale de `NEXT_PUBLIC_WHATSAPP_NUMBER`; nunca se hardcodea en el código fuente. |
+| RF-8 | Número de WhatsApp único vía env var | El número sale de `NEXT_PUBLIC_WHATSAPP_NUMBER`; nunca se hardcodea en el código fuente. El valor debe ser el número completo en formato internacional, solo dígitos (código de país + número), sin `+`, sin ceros a la izquierda y sin espacios, guiones ni paréntesis — RF-7 lo interpola tal cual en la URL de `wa.me`, sin normalizarlo. Ejemplo para Colombia: `NEXT_PUBLIC_WHATSAPP_NUMBER=573001234567` (código de país 57 + número). Un valor como `+57 300 123 4567` rompe el enlace. |
 
 ### Formato del mensaje
 

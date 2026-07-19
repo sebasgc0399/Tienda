@@ -25,7 +25,7 @@ Permitir que cualquier visitante explore el catálogo de productos (ramos, gorra
 
 | ID | Requisito | Detalle |
 |----|-----------|---------|
-| RF-1 | Home con destacados | Sección que lista productos con `is_featured = true`; curaduría manual, sin algoritmo de ventas. |
+| RF-1 | Home con destacados | Sección que lista productos con `is_featured = true`; curaduría manual, sin algoritmo de ventas. Orden determinístico e independiente del `display_order` por categoría (que solo tiene sentido dentro de una categoría): `ORDER BY created_at DESC` (o `updated_at DESC`). El primer producto de ese orden ocupa el slot "grande" del bento (ver `design-system.md`, sección Home). |
 | RF-2 | Mega-menú de categorías | La navegación superior despliega columnas con las categorías activas (patrón Apple). |
 | RF-3 | Listado por categoría | Ruta `/categoria/[slug]`; productos ordenados por `display_order` ascendente. |
 | RF-4 | Detalle de producto | Ruta `/producto/[slug]`; muestra galería, nombre, descripción, precio y disponibilidad. |
@@ -41,7 +41,9 @@ Permitir que cualquier visitante explore el catálogo de productos (ramos, gorra
 ## Casos borde
 
 - **Categoría vacía**: si no tiene productos activos, el listado muestra un mensaje ("Sin productos por el momento") en lugar de una grilla vacía.
+- **Categoría inactiva** (`is_active = false`): se trata como no encontrada; la ruta `/categoria/[slug]` responde 404 (distinto de "Categoría vacía", que sí tiene ruta válida pero sin productos activos).
 - **Producto inactivo** (`is_active = false`): se trata como no encontrado; la ruta responde 404.
+- **Categoría padre inactiva**: un producto con `is_active = true` cuya categoría (`category_id`) tiene `is_active = false` NO se muestra en destacados ni en su propia PDP — su visibilidad pública requiere que tanto el producto como su categoría tengan `is_active = true`.
 - **Producto agotado** (`availability = out_of_stock`): se muestra en listado y detalle con una etiqueta "Agotado"; el botón "Añadir al carrito" queda deshabilitado.
 - **Producto sobre pedido** (`availability = made_to_order`): se muestra con su etiqueta correspondiente; el botón permanece habilitado porque la disponibilidad real se confirma por WhatsApp.
 - **Producto sin imágenes**: la galería y la card muestran una imagen placeholder genérica en lugar de un espacio vacío.
@@ -52,6 +54,7 @@ Permitir que cualquier visitante explore el catálogo de productos (ramos, gorra
 - `categories`: lectura de `slug`, `name`, `display_order`, `is_active` (esquema completo en `data-model.md`).
 - `products`: lectura de `slug`, `name`, `description`, `price`, `is_featured`, `availability`, `is_active`, `display_order` (esquema completo en `data-model.md`).
 - `product_images`: lectura de `storage_path`, `alt_text`, `is_primary`, `display_order` (esquema completo en `data-model.md`).
+- Toda consulta de `products` para el sitio público (destacados, listado por categoría, PDP) filtra también por `categories.is_active = true` vía `products.category_id`, no solo por `products.is_active`.
 - Este feature es de solo lectura pública; no escribe en ninguna tabla (la escritura vive en `admin-panel.md`).
 
 ## Preguntas abiertas

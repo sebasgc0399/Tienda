@@ -52,7 +52,7 @@ Cada fila enlaza al ADR donde está justificada la elección. Esta tabla es un m
 | Framework | Next.js (App Router) | [ADR-0001](docs/adr/0001-nextjs-app-router.md) |
 | Backend (base de datos, autenticación, almacenamiento de archivos) | Supabase (Postgres) | [ADR-0002](docs/adr/0002-supabase-vs-firebase.md) |
 | Checkout | Mensaje pre-armado vía `wa.me` (sin pasarela de pago) | [ADR-0003](docs/adr/0003-whatsapp-checkout-no-payment-gateway.md) |
-| Deploy | Vercel (free tier) | [ADR-0004](docs/adr/0004-vercel-deployment.md) |
+| Deploy | Vercel | [ADR-0004](docs/adr/0004-vercel-deployment.md) |
 | Estilos y componentes de UI | Tailwind CSS + shadcn/ui | [ADR-0005](docs/adr/0005-styling-tailwind-shadcn.md) |
 | Organización del código | Feature-based, Server Components por defecto | [ADR-0006](docs/adr/0006-feature-based-structure-and-server-components.md) |
 
@@ -66,6 +66,10 @@ Notas operativas sobre cómo se usa cada capa una vez exista código (sin repeti
 
 Ningún comando existe todavía porque el scaffold de Next.js no se ha ejecutado. La tabla queda como placeholder de lo que hay que completar apenas exista `package.json`.
 
+### Requisitos
+
+Node.js >= la versión mínima que exija la versión de Next.js que se scaffoldee. Hoy Next.js 16 requiere Node.js >= 20.9 (Node 18 no soportado; verificado en nextjs.org/docs, instalación v16.2.10).
+
 | Acción | Comando |
 |---|---|
 | Instalar dependencias | TBD |
@@ -76,7 +80,19 @@ Ningún comando existe todavía porque el scaffold de Next.js no se ha ejecutado
 | Generar tipos TypeScript desde el esquema de Supabase | TBD |
 | Aplicar migraciones SQL a Supabase | TBD |
 
-**Instrucción para quien haga el scaffold:** en cuanto `package.json` exista, reemplazar cada `TBD` por el comando real (por ejemplo `npm install`, `npm run dev`, `npm run build`, `npm run lint`) en el mismo PR que agrega el scaffold. Esta tabla es la primera fuente que va a consultar cualquier agente de IA antes de correr un comando — mantenerla desactualizada rompe esa confianza.
+**Instrucción para quien haga el scaffold:**
+
+- Comando pineado — no usar los "recommended defaults" del CLI tal cual: `src/` es una pregunta opt-in con default "No" (el flujo de defaults recomendados trae TypeScript, ESLint, Tailwind, App Router y AGENTS.md, pero no `src/`), y `--yes` tampoco lo activa.
+
+  ```
+  npx create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --no-agents-md
+  ```
+
+  Esto fuerza el árbol `src/` que exige la sección 5 sin depender de lo que se responda en los prompts restantes que puedan quedar interactivos.
+- `--no-agents-md` es obligatorio en este repo: `create-next-app` trae `--agents-md` activado por defecto y genera, además de `AGENTS.md`, un `CLAUDE.md` propio de una sola línea (`@AGENTS.md`) en la raíz — correrlo sin esta bandera **sobrescribe** este archivo gobernado de ~250 líneas con esa línea única, no lo duplica.
+- El scaffold corre in-place en la raíz de este repo (target `.`), que ya contiene `CLAUDE.md`, `README.md`, `docs/` y `.atl/`; si el CLI rechaza el directorio por archivos existentes, resolverlo sin perder estos archivos, y nunca dejar que un scaffold generado aparte sobrescriba este `CLAUDE.md` al fusionarse.
+- Si en algún momento se quiere el `AGENTS.md` que genera Next.js (puntero a su documentación empaquetada), no usar `--no-agents-md` para ese archivo específico, pero sí registrar el `AGENTS.md` resultante en el mapa de documentación (sección 7/8) para que no quede como archivo no gobernado; si no se quiere, mantener `--no-agents-md`.
+- En cuanto `package.json` exista, reemplazar cada `TBD` por el comando real (por ejemplo `npm install`, `npm run dev`, `npm run build`, `npm run lint`) en el mismo PR que agrega el scaffold. Esta tabla es la primera fuente que va a consultar cualquier agente de IA antes de correr un comando — mantenerla desactualizada rompe esa confianza.
 
 ## 5. Estructura del proyecto
 
@@ -244,6 +260,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 # público — llega al bundle del cliente, por eso el prefijo
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# número WhatsApp en formato internacional, solo dígitos, sin +, sin ceros a la izquierda ni espacios (ej. 573001234567)
 NEXT_PUBLIC_WHATSAPP_NUMBER=
 ```
 

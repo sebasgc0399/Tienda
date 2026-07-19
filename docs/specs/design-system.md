@@ -8,7 +8,7 @@ Definir guardrails visuales y de interacción para la tienda: tokens de diseño 
 
 **Alcance:**
 - Interpretación de las tres referencias del cliente en principios de diseño accionables.
-- Tokens de diseño (paleta, escala tipográfica, espaciado, radios) sobre `tailwind.config.ts`.
+- Tokens de diseño (paleta, escala tipográfica, espaciado, radios) definidos en `globals.css` vía el bloque `@theme` de Tailwind v4 (CSS-first); `tailwind.config.ts` solo aplica como opt-in de compatibilidad v3, vía la directiva `@config` en `globals.css` — sin ella, sus tokens se ignoran silenciosamente.
 - Inventario de componentes shadcn/ui a usar y su propósito.
 - Reglas de responsive mobile-first.
 - Accesibilidad básica (contraste, foco, texto alternativo).
@@ -66,7 +66,7 @@ Anatomía fija: imagen → título → precio → CTA. Todas las fotos de produc
 | Elemento | Regla |
 |---|---|
 | Aspect ratio | 1:1 en todas las fotos de producto, sin excepción. |
-| Hover (desktop) | Zoom CSS `transition-transform hover:scale-105`, dentro de `@media (hover: hover)` para no quedar activo en touch. |
+| Hover (desktop) | Zoom CSS `transition-transform hover:scale-105`, dentro de `@media (hover: hover)` para no quedar activo en touch. Respeta `prefers-reduced-motion` (obligatorio, ver [ADR-0007](../adr/0007-motion-strategy-css-radix.md)). |
 | Image-swap | Mejora opcional, reservada solo a productos destacados con una segunda foto curada del mismo ángulo y ratio. |
 
 ### PDP (detalle de producto)
@@ -78,7 +78,7 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 | Galería (desktop) | Columna principal, scroll vertical editorial; todos los thumbnails visibles, sin truncar. |
 | Buy-box (desktop) | `position: sticky` a la derecha — nombre, precio, CTA "Añadir al carrito" (RF-6 de `public-catalog.md`). |
 | Buy-bar (mobile) | Fija; precio + CTA "Añadir al carrito". Aparece vía `IntersectionObserver` cuando el CTA principal sale de la vista, re-exponiendo esa misma acción. "Pedir por WhatsApp" es una acción del carrito (RF-7 de `cart-whatsapp-checkout.md`), no del PDP. |
-| Animación de buy-bar | Solo `transform`/`opacity` (nunca `height`/`top`) para evitar layout shift. |
+| Animación de buy-bar | Solo `transform`/`opacity` (nunca `height`/`top`) para evitar layout shift. Respeta `prefers-reduced-motion` (obligatorio, ver [ADR-0007](../adr/0007-motion-strategy-css-radix.md)). |
 | Tap target | Mínimo 44×44px (WCAG 2.5.5). |
 
 ### Home
@@ -120,7 +120,7 @@ Máximo 2 familias tipográficas por dirección: un display (hero, títulos de c
 
 ## Touchpoints de datos
 
-- No hay tabla propia de este documento; los tokens viven como configuración en `tailwind.config.ts` y `globals.css`.
+- No hay tabla propia de este documento; los tokens viven en `globals.css` (bloque `@theme` de Tailwind v4).
 - `product_images.alt_text` alimenta el atributo `alt` de las imágenes (ver `data-model.md`).
 - `categories.display_order` y `products.display_order` determinan el orden en el mega-menú y en las listas (ver `data-model.md`).
 

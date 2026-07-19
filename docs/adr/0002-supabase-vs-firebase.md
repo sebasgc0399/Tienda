@@ -30,3 +30,5 @@ Se usa Supabase (Postgres + Auth + Storage) como backend, en lugar de Firebase.
 
 - Las imágenes de producto se almacenan en un bucket de Supabase Storage llamado `product-images`.
 - Existe un único administrador, autenticado vía Supabase Auth (email/password), sin registro público de usuarios.
+
+> **Nota:** Los proyectos de Supabase en tier gratuito se pausan automáticamente tras ~1 semana sin actividad de base de datos, dejando la tienda offline hasta reanudarla manualmente desde el dashboard (restaurable hasta 90 días; Supabase envía aviso por email ~1 semana antes). Ver supabase.com/docs/guides/platform/free-project-pausing. Mitigación: mantener el proyecto activo con un keep-alive programado (GitHub Action / cron / monitor de uptime) que ejecute una CONSULTA REAL a la base de datos (p. ej. un SELECT ligero vía la API REST/PostgREST sobre una tabla) — un simple ping HTTP al sitio no cuenta si no toca la base de datos —, o aceptar explícitamente que el proyecto puede requerir reanudación manual antes de demos/lanzamiento.
