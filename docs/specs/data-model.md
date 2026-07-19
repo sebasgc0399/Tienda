@@ -114,10 +114,18 @@ create policy "public read active categories" on categories
   for select to anon, authenticated
   using (is_active = true);
 
-create policy "public read active products" on products
+create policy "public read active products in active categories" on products
   for select to anon, authenticated
-  using (is_active = true);
+  using (
+    is_active = true
+    and exists (
+      select 1 from categories c
+      where c.id = products.category_id and c.is_active = true
+    )
+  );
 ```
+
+Un producto solo es visible públicamente si tanto él como su categoría padre están activos (ver escenario 2 más arriba y "Categoría padre inactiva" en [public-catalog.md](./public-catalog.md)). Este chequeo se aplica en la propia policy de RLS como defensa en profundidad — no todas las queries públicas filtran explícitamente por `categories.is_active` (p. ej. destacados en home), así que RLS es quien garantiza la regla en última instancia. El filtro `categories.is_active` a nivel de query (ver Touchpoints en public-catalog.md) queda entonces como una capa adicional, no como el único punto de aplicación.
 
 `product_images` no tiene columna `is_active` propia (ver RF-2): su visibilidad depende de que el producto y la categoría a la que pertenece estén activos, así que la policy hace `JOIN`:
 

@@ -11,9 +11,10 @@ export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, slug, name, price")
+    .select("id, slug, name, price, categories!inner(is_active)")
     .eq("is_featured", true)
     .eq("is_active", true)
+    .eq("categories.is_active", true)
     .order("created_at", { ascending: false })
     .limit(4)
 
@@ -21,5 +22,11 @@ export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
     throw new Error(`Failed to load featured products: ${error.message}`)
   }
 
-  return data ?? []
+  // Pick only the FeaturedProduct fields, dropping the join-only `categories` field.
+  return (data ?? []).map(({ id, slug, name, price }) => ({
+    id,
+    slug,
+    name,
+    price,
+  }))
 }

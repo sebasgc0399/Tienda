@@ -20,7 +20,7 @@ export function FeaturedStrip({ products }: FeaturedStripProps) {
           className="border-border bg-card rounded-lg border p-4"
         >
           {/* Placeholder box: seed data has no image binaries in Storage */}
-          <div className="bg-secondary mb-3 aspect-square rounded-md" />
+          <div className="bg-secondary mb-3 aspect-square rounded-lg" />
           <h3 className="text-sm font-bold">{product.name}</h3>
           <p className="mt-1 text-sm">{formatCurrency(product.price)}</p>
         </li>
