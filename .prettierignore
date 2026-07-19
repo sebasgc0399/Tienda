@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+build/
+pnpm-lock.yaml
+public/
+.atl/
+docs/
+supabase/
+CLAUDE.md
