@@ -201,7 +201,7 @@ Los archivos que App Router reconoce por convención (`page.tsx`, `layout.tsx`, 
 
 El índice completo de ADRs y specs, con una descripción de una línea por cada uno y la lista explícita de qué NO se documenta en este repositorio, está en [docs/README.md](docs/README.md). No se repite esa lista aquí para evitar mantener el mismo inventario en dos lugares — si se agrega un ADR o un spec nuevo, se actualiza únicamente `docs/README.md`.
 
-Hoy el repositorio tiene 6 ADRs (`docs/adr/0001` a `0006`) y 5 specs (`docs/specs/`), más una plantilla de cada tipo para documentos futuros. Si aparece una decisión de arquitectura o una feature que no encaja en ninguno de los documentos existentes, corresponde crear uno nuevo con la plantilla — no forzarla dentro de un documento que responde otra pregunta.
+Hoy el repositorio tiene 7 ADRs (`docs/adr/0001` a `0007`) y 5 specs (`docs/specs/`), más una plantilla de cada tipo para documentos futuros, más `docs/guides/` para guías operativas cortas que no encajan como ADR ni como spec (por ejemplo, la guía de fotografía de productos). Si aparece una decisión de arquitectura o una feature que no encaja en ninguno de los documentos existentes, corresponde crear uno nuevo con la plantilla — no forzarla dentro de un documento que responde otra pregunta.
 
 Si un ADR y un spec parecen contradecirse, la causa casi siempre es que uno de los dos quedó desactualizado tras un cambio que no se propagó — no que existan dos respuestas válidas. En ese caso, se corrige el documento desactualizado en vez de dejar la contradicción o de resolverla verbalmente sin dejar rastro escrito.
 
