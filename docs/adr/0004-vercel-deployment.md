@@ -14,16 +14,17 @@ Next.js está optimizado para desplegarse en Vercel, con integración nativa a G
 
 ## Decisión
 
-El proyecto se despliega en Vercel. Durante el desarrollo y antes del lanzamiento público, Estevan puede usar el tier gratuito (Hobby) para sus despliegues personales de desarrollo y preview. Una vez la tienda esté públicamente en vivo anunciando la venta de productos, el proyecto debe correr en Vercel Pro: las Fair Use Guidelines de Vercel restringen Hobby a uso personal no comercial y listan explícitamente "advertising the sale of a product or service" como uso descalificante, sin importar el volumen de tráfico.
+El proyecto se despliega en Vercel en el tier gratuito (Hobby), incluido el lanzamiento público, sin presupuesto de hosting. Se acepta explícitamente el riesgo de las Fair Use Guidelines: Hobby está formalmente restringido a uso personal no comercial ("advertising the sale of a product or service" es uso descalificante), pero para sitios de tráfico bajo la aplicación práctica de esa política es poco frecuente y el escenario realista ante una observación de Vercel es una solicitud de upgrade, no una baja inmediata (decisión del 2026-07-19, con experiencia previa del equipo operando sitios pequeños en Hobby sin incidentes).
 
 ## Alternativas consideradas
 
-- No se evaluaron alternativas de proveedor: la combinación Next.js + Vercel es el camino de menor fricción para que un desarrollador único despliegue sin configurar infraestructura propia.
+- **Vercel Pro**: elimina el riesgo de la política de uso comercial, pero introduce un costo mensual que contradice el requisito de operar sin presupuesto. Queda como opción si la tienda crece o si Vercel exige el upgrade.
+- **Otros hosts gratuitos sin restricción comercial** (p. ej. Cloudflare Pages/Workers, Netlify): descartados como opción inicial por mayor fricción para desplegar Next.js que la integración nativa de Vercel; quedan como plan de migración documentado si el riesgo de Hobby se materializa (verificar sus políticas y compatibilidad vigentes al momento de migrar).
 
 ## Consecuencias
 
 - Deploy automático en cada push a `main` y preview deployments por pull request, sin configuración de CI/CD adicional.
 - Estevan puede desplegar su fork de forma independiente, sin acceso a infraestructura compartida.
-- El proyecto queda atado a los límites y comportamiento del tier de Vercel elegido en cada etapa (Hobby en desarrollo, Pro en producción pública).
+- El proyecto queda atado a los límites del tier Hobby y al riesgo aceptado de su política de uso comercial; si Vercel lo observa, el camino es upgrade a Pro o migración al plan alternativo documentado.
 
-> **Nota:** Vercel Hobby está limitado por sus Fair Use Guidelines a uso personal no comercial; un catálogo público que anuncia la venta de productos califica como uso comercial ("advertising the sale of a product or service") y requiere Vercel Pro, sin importar el tráfico. Mantener Hobby solo para desarrollo/preview antes del lanzamiento; migrar a Pro antes de anunciar la tienda públicamente — un sitio comercial en vivo sobre Hobby queda sujeto a pausa o baja según la política, no es solo un pedido de upgrade. Además, confirmar los límites vigentes del tier elegido (ancho de banda, invocaciones de funciones, build minutes) antes de pasar a producción, ya que pueden cambiar y afectar la viabilidad del plan a mediano plazo.
+> **Nota (riesgo aceptado):** un sitio comercial en vivo sobre Hobby incumple formalmente las Fair Use Guidelines y queda sujeto, en teoría, a pausa o baja según la política. El equipo acepta ese riesgo para operar con costo cero; si Vercel lo señala, se hace upgrade a Pro o se migra al host alternativo (ver Alternativas). Confirmar además los límites vigentes del tier Hobby (ancho de banda, invocaciones de funciones, transformaciones de imagen) antes de pasar a producción, ya que pueden cambiar.
