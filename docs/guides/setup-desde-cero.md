@@ -56,9 +56,10 @@ Cada fork crea **su propio** proyecto de Supabase — no se comparte uno entre f
 1. **Crear el proyecto**: en [supabase.com](https://supabase.com), "New project". Elegir una región cercana a tus usuarios reales (por ejemplo, São Paulo para Colombia).
 2. **[tras el scaffold] Aplicar las migraciones**: en el dashboard, ir a **SQL Editor** y ejecutar, en orden, cada archivo de `supabase/migrations/` del repositorio. Definen `categories`, `products`, `product_images` (ver [data-model.md](../specs/data-model.md)) y sus policies de RLS. El SQL Editor es el camino inicial; Supabase CLI queda como camino de crecimiento opcional más adelante (ver [CLAUDE.md](../../CLAUDE.md), sección 4).
 3. **Crear el bucket de imágenes**: en **Storage**, crear un bucket llamado `product-images` como **público** — es una decisión explícita, no el default de Supabase (ver [admin-panel.md](../specs/admin-panel.md#almacenamiento--storage)).
-4. **Activar RLS**: las migraciones ya definen las policies (lectura pública de `is_active = true`, escritura solo autenticada); confirmar en **Authentication > Policies** que RLS quedó activado en las tres tablas.
-5. **Crear el único usuario admin**: en **Authentication > Users > Add user**, crear el usuario con email y password. No hay registro público — este es el único punto de alta (ver [admin-panel.md](../specs/admin-panel.md), RF-1).
-6. **Copiar credenciales**: en **Project Settings > API**, copiar el **Project URL** y la **anon public key** — se usan en la siguiente sección.
+4. **Activar RLS**: las migraciones ya definen las policies (lectura pública de `is_active = true`; sin policies de escritura para `anon`/`authenticated` — las mutaciones las hace el servidor con la `service_role` key, ver [data-model.md](../specs/data-model.md#row-level-security-rls)); confirmar en **Authentication > Policies** que RLS quedó activado en las tres tablas.
+5. **Crear el único usuario admin**: en **Authentication > Users > Add user**, crear el usuario con email y una **contraseña fuerte y única** (12+ caracteres, generada y guardada en un gestor de contraseñas). Esta cuenta no tiene pantalla de registro pública, así que su contraseña es el único punto de fallo de acceso al panel — Supabase exige por defecto solo 6 caracteres como mínimo, y la protección automática contra contraseñas filtradas (HaveIBeenPwned) es exclusiva del plan Pro, no disponible en el tier gratuito de este proyecto. Se puede subir el mínimo de longitud y exigir clases de caracteres en **Authentication > Providers > Email** (no confundir con **Authentication > Policies**, usado en el paso anterior para RLS). Más adelante se puede sumar MFA por TOTP como capa adicional — es gratis en todos los planes de Supabase. No hay pantalla de registro visible en la UI — este es el único punto de alta desde la interfaz (ver [admin-panel.md](../specs/admin-panel.md), RF-1); la garantía real a nivel de API la da el paso siguiente, no la ausencia de UI.
+6. **Desactivar el registro público**: en **Authentication > Sign In / Providers** (la opción también puede aparecer bajo **Project Settings > Authentication**), sección "User Signups", desactivar **"Allow new users to sign up"**. Este es el control real que cierra el registro: la `anon key` es pública por diseño, así que sin este paso cualquiera puede llamar directamente a `{SUPABASE_URL}/auth/v1/signup` y obtener un JWT `authenticated` válido sin pasar por la aplicación — la falta de pantalla de registro en el frontend (paso anterior) no alcanza para evitarlo por sí sola.
+7. **Copiar credenciales**: en **Project Settings > API**, copiar el **Project URL** y la **anon public key** — se usan en la siguiente sección.
 
 ## 6. Variables de entorno
 
@@ -123,6 +124,18 @@ Crear los secrets del repositorio en **Settings > Secrets and variables > Action
 | `SUPABASE_KEEPALIVE_KEY` | El mismo valor que `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
 
 Usar la `anon key` acá es seguro: es la misma clave pública que ya viaja al bundle del cliente, sujeta a RLS.
+
+### Backups
+
+Supabase no ofrece backups automáticos en el tier gratuito — la mitigación acá es manual y proporcional a un catálogo chico y sin PII (no hay pagos, pedidos ni datos de clientes en la base de datos; ver [ADR-0003](../adr/0003-whatsapp-checkout-no-payment-gateway.md)).
+
+**Mínimo (sin herramientas adicionales)**: antes de correr cualquier SQL riesgoso en el SQL Editor (`DROP`, `DELETE`, `ALTER` o una migración nueva), exportar cada tabla desde **Table Editor** > seleccionar `categories` / `products` / `product_images` > **Export to CSV**. Tres CSVs chicos son una foto completa de los metadatos del catálogo y no requieren instalar nada. Repetir este paso cada vez antes de correr SQL a mano.
+
+**Si se adopta Supabase CLI** (camino de crecimiento opcional, ver [CLAUDE.md](../../CLAUDE.md), sección 4): `supabase db dump --data-only -f backup.sql` alcanza porque el esquema ya está versionado en `supabase/migrations/`. Guardar el archivo fuera de este repo (local o un repo privado aparte), nunca en el repo público del proyecto.
+
+**Si se automatiza con GitHub Actions** (opcional, cron semanal): no subir el dump como artifact de este repo — si el repo es público, sus artifacts son descargables sin autenticación vía la API REST de artifacts. Empujar el dump a un repo **privado** aparte usando un PAT como secret. A diferencia del keep-alive de arriba (que usa la `anon key` pública sobre PostgREST, solo lectura y sujeta a RLS), un dump necesita la cadena de conexión de Postgres **con password** (`SUPABASE_DB_URL` o `SUPABASE_ACCESS_TOKEN` + project ref) — un secret mucho más sensible; guardarlo como secret cifrado del repo y nunca imprimirlo en logs.
+
+**Falta cubrir**: un `db dump` de Postgres no incluye los archivos binarios del bucket `product-images` en Storage, solo las filas de `product_images.storage_path` que los referencian. Para un catálogo chico alcanza con que la dueña conserve las fotos originales; un pipeline de backup de Storage es sobre-ingeniería para este proyecto.
 
 ## 9. Trabajar con Claude Code en este repo
 

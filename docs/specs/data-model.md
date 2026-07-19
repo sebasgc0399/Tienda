@@ -24,7 +24,14 @@ Definir el esquema de base de datos (Postgres/Supabase) del catálogo: `categori
 | RF-3 | Destacados curados a mano | `products.is_featured` lo activa la dueña manualmente desde el panel admin; no existe lógica de ventas ni analítica que lo calcule automáticamente. |
 | RF-4 | Disponibilidad como enum | `products.availability` es un enum nativo de Postgres, `product_availability` (`CREATE TYPE product_availability AS ENUM ('in_stock', 'out_of_stock', 'made_to_order')`), no un `text` con `CHECK`: así los tipos que Supabase genera en TypeScript exponen el union literal `'in_stock' \| 'out_of_stock' \| 'made_to_order'` en vez de `string`. Un booleano simple no alcanza porque parte del catálogo son piezas artesanales hechas bajo pedido. Tradeoff: agregar valores a un enum nativo requiere `ALTER TYPE ... ADD VALUE`; si esa rigidez pesa más que la seguridad de tipos, la alternativa es `text` + `CHECK`, pero entonces el tipo generado sería `string`. |
 | RF-5 | Orden manual de presentación | `display_order` existe en las tres tablas porque la dueña controla el orden visual del catálogo (categorías, productos dentro de una categoría, imágenes de un producto); no depende de un algoritmo. El `display_order` de `products` es válido solo dentro de su categoría, no aplica al orden global de "destacados" en el home (ver `public-catalog.md`, RF-1). |
-| RF-6 | Imágenes por ruta relativa | `storage_path` guarda la ruta del archivo dentro del bucket `product-images` de Supabase Storage, no la URL pública completa. La URL se resuelve en tiempo de lectura a partir de esa ruta. Política de acceso del bucket (público/privado) documentada en [admin-panel.md](./admin-panel.md), sección Seguridad. |
+| RF-6 | Imágenes por ruta relativa | `storage_path` guarda la ruta del archivo dentro del bucket `product-images` de Supabase Storage, no la URL pública completa. La URL se resuelve en tiempo de lectura a partir de esa ruta. Política de acceso del bucket (público/privado) documentada en [admin-panel.md](./admin-panel.md), sección Seguridad. Convención de la ruta: ver "Convención de storage_path" más abajo. |
+
+### Convención de storage_path
+
+- Clave del objeto en el bucket `product-images`: `{product_id}/{uuid}.{ext}` para imágenes de producto y `categories/{category_id}/{uuid}.{ext}` para portadas de categoría. Agrupar por el id de la fila dueña facilita la limpieza masiva y evita colisiones entre productos.
+- El `uuid` se genera server-side (`crypto.randomUUID()`, o reutilizar el `id` de la fila `product_images` que se está creando) — nunca a partir del nombre de archivo del cliente. Los celulares generan nombres repetibles entre fotos (`IMG_0001.jpg`); usar el nombre del cliente como clave produciría colisiones reales entre productos distintos.
+- `ext` se deriva del MIME type ya validado en la subida (ver [admin-panel.md](./admin-panel.md), RF-5: `image/jpeg`/`png`/`webp` → `jpg`/`png`/`webp`), no de la extensión del archivo del cliente.
+- Las subidas nuevas nunca usan `upsert: true`: como cada subida apunta a una ruta única, un error "Asset Already Exists" señala un bug real (por ejemplo un reintento), no algo para resolver sobrescribiendo. `upsert: true` solo es aceptable para un reemplazo deliberado in-place de la misma imagen lógica, si ese flujo se agrega más adelante.
 
 ## Escenarios de usuario
 
@@ -87,6 +94,50 @@ Definir el esquema de base de datos (Postgres/Supabase) del catálogo: `categori
 
 - `categories` 1—N `products` vía `products.category_id`, con `ON DELETE RESTRICT`: no se puede eliminar una categoría que aún tenga productos asociados.
 - `products` 1—N `product_images` vía `product_images.product_id`, con `ON DELETE CASCADE`: al eliminar físicamente un producto, sus imágenes se eliminan en cascada.
+
+## Row Level Security (RLS)
+
+Fuente única de verdad de las policies de RLS de las tres tablas; [admin-panel.md](./admin-panel.md#seguridad) referencia esta sección en vez de redefinirla.
+
+RLS se activa explícitamente por tabla — crear una tabla desde el SQL Editor no la activa sola:
+
+```sql
+alter table categories enable row level security;
+alter table products enable row level security;
+alter table product_images enable row level security;
+```
+
+**Lectura pública** (`anon` y `authenticated`), limitada a registros activos:
+
+```sql
+create policy "public read active categories" on categories
+  for select to anon, authenticated
+  using (is_active = true);
+
+create policy "public read active products" on products
+  for select to anon, authenticated
+  using (is_active = true);
+```
+
+`product_images` no tiene columna `is_active` propia (ver RF-2): su visibilidad depende de que el producto y la categoría a la que pertenece estén activos, así que la policy hace `JOIN`:
+
+```sql
+create policy "public read images of active products" on product_images
+  for select to anon, authenticated
+  using (
+    exists (
+      select 1 from products p
+      join categories c on c.id = p.category_id
+      where p.id = product_images.product_id
+        and p.is_active = true
+        and c.is_active = true
+    )
+  );
+```
+
+**Escritura**: ninguna de las tres tablas otorga policies de `insert`/`update`/`delete` a `anon` ni a `authenticated` — con RLS activado y solo policies de `select`, esas escrituras ya quedan denegadas por default, sin necesidad de una policy explícita de rechazo. La autoridad real de escritura es la `service_role key`, usada exclusivamente server-side dentro de Server Actions que re-verifican la sesión del admin antes de escribir (ver [admin-panel.md](./admin-panel.md#seguridad)) — el mismo modelo que ya aplica al bucket de Storage.
+
+Si alguna vez se necesita que el cliente escriba directamente sujeto a RLS (sin pasar por una Server Action), la policy debe acotarse a la única cuenta admin — nunca un `to authenticated` sin condición, porque eso vuelve a abrir la escritura a cualquier cuenta que logre autenticarse (por ejemplo, si el registro público se reactivara por error) — por ejemplo `using (auth.uid() = '<uuid-del-admin>')`.
 
 ## Preguntas abiertas
 

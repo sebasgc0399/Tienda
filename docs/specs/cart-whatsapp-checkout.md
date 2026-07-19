@@ -55,8 +55,12 @@ Los montos se formatean como pesos colombianos (COP) sin decimales, con prefijo 
 
 - **Carrito vacío**: el botón "Pedir por WhatsApp" queda deshabilitado o no se muestra; no se genera ningún mensaje ni se abre `wa.me`.
 - **Longitud máxima de la URL `wa.me`**: pedidos con muchos ítems o nombres largos pueden generar una URL extensa. `wa.me` tolera URLs largas, pero como salvaguarda se debe advertir o truncar el mensaje cuando supere un umbral razonable (decisión de implementación; ver preguntas abiertas).
-- **Producto no disponible entre añadir y checkout**: el carrito no valida disponibilidad contra la base de datos en cada render. Antes de generar el mensaje se revalida `availability` e `is_active` del producto; si el estado cambió, se marca el ítem y se pide confirmación o remoción antes de continuar.
+- **Producto no disponible entre añadir y checkout**: el carrito no valida disponibilidad ni precio contra la base de datos en cada render. Antes de generar el mensaje se revalida `availability`, `is_active` **y `price`** del producto contra `products`; si `availability`/`is_active` cambiaron, se marca el ítem y se pide confirmación o remoción antes de continuar. El subtotal por ítem y el total del mensaje se recalculan siempre a partir del `price` recién leído de la base de datos, nunca del valor guardado en `localStorage` — cierra la vía más directa para manipular el precio desde devtools antes de enviar el pedido, sin costo adicional porque la fila del producto ya se está consultando en este mismo paso.
 - **Caracteres especiales y emojis**: nombres de producto con tildes, ñ u otros caracteres UTF-8 se codifican correctamente porque `encodeURIComponent` maneja Unicode de forma nativa; no se requiere sanitización adicional.
+
+## Nota operativa
+
+El mensaje de WhatsApp lo arma el navegador de la clienta a partir de `localStorage` y no queda firmado ni verificado por un servidor. La revalidación de precio del caso borde anterior cierra la manipulación antes del envío, pero como respaldo la dueña debe confirmar el precio/total contra el precio real en el panel admin antes de aceptar cualquier pedido — coherente con el diseño sin backend de pedidos ni pasarela de pago (ver [ADR-0003](../adr/0003-whatsapp-checkout-no-payment-gateway.md)).
 
 ## Touchpoints de datos
 
