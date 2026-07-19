@@ -20,17 +20,17 @@ Tienda es una vitrina e-commerce-lite para un negocio familiar en Colombia que v
 
 ## 2. Estado del proyecto
 
-**Fase actual: documentación.** Este repositorio contiene por ahora únicamente la base documental (ADRs, specs y esta guía). Todavía no existe scaffold de Next.js, ni proyecto de Supabase configurado con sus migraciones SQL, ni implementación del diseño visual. El objetivo de esta fase es dejar las decisiones y el diseño por escrito antes de escribir la primera línea de código de la aplicación, para que cualquiera que continúe el proyecto — humano o agente de IA — pueda entender qué construir y por qué sin tener que preguntar.
+**Fase actual: scaffold completado.** El repositorio contiene la base documental (ADRs, specs y esta guía) y el esqueleto de código: Next.js 16 con App Router y `src/`, tooling de enforcement (ESLint + Prettier + husky/lint-staged + Vitest), tema visual base (dirección A), esquema SQL versionado con seed de ejemplo, los tres clientes de Supabase y una home mínima de prueba de datos. Las features completas (catálogo, carrito, admin) vienen en pasos siguientes sobre esta base.
 
 | Elemento | Estado |
 |---|---|
 | Documentación (ADRs + specs + esta guía) | Completa |
-| Scaffold de Next.js | Pendiente |
-| Proyecto de Supabase (migraciones SQL) | Pendiente |
-| Diseño visual implementado | Pendiente |
+| Scaffold de Next.js | Hecho |
+| Migraciones SQL + seed | SQL versionado en `supabase/`; aplicación por fork pendiente (setup §5) |
+| Diseño visual implementado | Base (tokens + fuentes) implementada; pantallas completas pendientes |
 | Deploy en Vercel | Pendiente |
 
-Cuando se ejecute el scaffold, quien lo haga debe volver a este archivo y actualizar la sección 4 (Comandos) con los comandos reales que aparezcan en `package.json`. No dejar los `TBD` de esa tabla sin actualizar — un `CLAUDE.md` con comandos falsos es peor que uno sin comandos.
+Si los comandos de `package.json` cambian, actualizar la sección 4 (Comandos) en el mismo PR — un `CLAUDE.md` con comandos falsos es peor que uno sin comandos.
 
 ### Flujo de trabajo previsto
 
@@ -38,7 +38,7 @@ Este repositorio nace como base documental para que otra persona lo continúe de
 
 1. La base (esta documentación) se construye y se publica en `main`.
 2. Estevan hace fork del repositorio.
-3. Estevan ejecuta el scaffold de Next.js, configura su propio proyecto de Supabase y despliega su fork en su propia cuenta de Vercel (ver [ADR-0004](docs/adr/0004-vercel-deployment.md)).
+3. Estevan configura su propio proyecto de Supabase y despliega su fork en su propia cuenta de Vercel (ver [ADR-0004](docs/adr/0004-vercel-deployment.md)) — el scaffold ya viene hecho en el repo, no se vuelve a ejecutar.
 4. A partir de ahí, Estevan continúa el desarrollo de forma autónoma, apoyándose en los ADRs y specs de este repositorio para entender el porqué y el qué de cada decisión ya tomada.
 
 Este documento, los ADRs/specs enlazados y la guía paso a paso en [docs/guides/setup-desde-cero.md](docs/guides/setup-desde-cero.md) son, en conjunto, el material de traspaso: no requieren una sesión de onboarding en vivo para ser entendidos.
@@ -62,34 +62,32 @@ Notas operativas sobre cómo se usa cada capa una vez exista código (sin repeti
   1. **Cliente de browser** — `createBrowserClient` (`@supabase/ssr`), usa la `anon key` pública, corre en componentes `"use client"`, sujeto a RLS.
   2. **Cliente de servidor por sesión** — `createServerClient` (`@supabase/ssr`), `anon key` + cookies vía `next/headers`, sujeto a RLS. Es el cliente que usan los Server Components para las lecturas del catálogo público (home, listado, detalle).
   3. **Cliente admin/service** — `createClient` (`@supabase-js`), `service_role key`, evita RLS por completo, server-only. Uso concreto en v1: las mutaciones del admin (Server Actions en `features/admin/actions/` — filas de `categories`/`products`/`product_images` y objetos de Storage), siempre después de que la propia Server Action re-verificó la sesión con `getUser()`/`getClaims()` (ver sección 9) — esa re-verificación, no RLS, es lo que impide que cualquiera dispare estas mutaciones. Nunca se usa para renderizar páginas públicas ni anónimas.
-- Los componentes de shadcn/ui no llegan como dependencia de `node_modules`: su CLI los copia como código fuente dentro de `components/ui/`, así que se editan directamente en el repo en vez de "actualizarse" con un gestor de paquetes.
+- Los componentes de shadcn/ui no llegan como dependencia de `node_modules`: su CLI los copia como código fuente dentro de `components/ui/`, así que se editan directamente en el repo en vez de "actualizarse" con un gestor de paquetes. Las primitivas que genera son de **Base UI** (default del CLI de shadcn desde julio 2026, registrado en `components.json` como estilo `base-nova`) — decisión operativa que ejecuta el [ADR-0007](docs/adr/0007-motion-strategy-css-radix.md), que es agnóstico de primitiva.
 - Las rutas de `app/` son deliberadamente finas: obtienen datos y componen features, pero la lógica vive en `features/`, conforme a la organización feature-based del ADR-0006.
 
 ## 4. Comandos
 
-Ningún comando existe todavía porque el scaffold de Next.js no se ha ejecutado. La tabla queda como placeholder de lo que hay que completar apenas exista `package.json`.
-
 ### Requisitos
 
-Node.js >= la versión mínima que exija la versión de Next.js que se scaffoldee. Hoy Next.js 16 requiere Node.js >= 20.9 (Node 18 no soportado; verificado en nextjs.org/docs, instalación v16.2.10).
+Node.js >= 20.9 (lo exige Next.js 16; Node 18 no soportado).
 
-Gestor de paquetes pineado: **pnpm** (no `npm` ni `yarn`). Se instala vía Corepack, que ya viene con Node.js: `corepack enable`. La versión exacta queda fijada en el campo `packageManager` de `package.json` en cuanto exista el scaffold; Corepack la resuelve sola en el primer `pnpm install`.
+Gestor de paquetes pineado: **pnpm** (no `npm` ni `yarn`), fijado en el campo `packageManager` de `package.json`. Camino recomendado: `corepack enable` (Corepack viene con Node.js). En Windows, `corepack enable` puede fallar con `EPERM` si Node está instalado en `Program Files` — en ese caso, correr la terminal como administrador o usar el fallback `npm install -g pnpm` (instala en espacio de usuario, funciona igual).
 
 | Acción | Comando |
 |---|---|
-| Instalar dependencias | TBD |
-| Levantar entorno de desarrollo | TBD |
-| Build de producción | TBD |
-| Lint | TBD |
-| Tests | TBD — no hay estrategia de tests definida todavía (ver [docs/README.md](docs/README.md), sección "Qué NO documentamos") |
-| Generar tipos TypeScript desde el esquema de Supabase | TBD |
-| Aplicar migraciones SQL a Supabase | TBD |
+| Instalar dependencias | `pnpm install` |
+| Levantar entorno de desarrollo | `pnpm dev` |
+| Build de producción | `pnpm build` |
+| Lint | `pnpm lint` (formateo manual: `pnpm format`) |
+| Tests | `pnpm test` (watch: `pnpm test:watch`) |
+| Generar tipos TypeScript desde el esquema de Supabase | `pnpm dlx supabase gen types typescript --project-id <ref> > src/types/database.ts` (requiere el project ref del fork; mientras tanto, `src/types/database.ts` está escrito a mano) |
+| Aplicar migraciones SQL a Supabase | Manual: SQL Editor del dashboard (setup §5); opcional `supabase db push` con la CLI |
 
 **Migraciones de base de datos (decisión ya tomada, independiente del scaffold):** viven como archivos SQL versionados en `supabase/migrations/`, committeados al repo. Se aplican al principio manualmente desde el SQL Editor del dashboard de Supabase, en orden; Supabase CLI (`supabase db push`) queda como camino de crecimiento opcional para más adelante, no como requisito inicial. Paso a paso operativo en [docs/guides/setup-desde-cero.md](docs/guides/setup-desde-cero.md).
 
 **Seed data (decisión ya tomada):** el repo incluye `supabase/seed.sql` con datos de **ejemplo** únicamente — 2-3 categorías y 4-6 productos ficticios — para poder verificar catálogo y admin de punta a punta antes de que exista un producto real. Se aplica manualmente desde el SQL Editor, después de las migraciones. Misma regla que las migraciones respecto a contenido: solo datos placeholder, nunca PII ni credenciales (ver guardrail "Datos de ejemplo y credenciales en SQL", sección 9). Los productos reales los carga la dueña desde el panel admin — el seed nunca se reemplaza por datos reales committeados al repo.
 
-**Instrucción para quien haga el scaffold:**
+**Registro del scaffold (ya ejecutado el 2026-07-19 — Estevan NO debe re-correr esto; se conserva como referencia de cómo se generó el esqueleto):**
 
 - Comando pineado — no usar los "recommended defaults" del CLI tal cual: `src/` es una pregunta opt-in con default "No" (el flujo de defaults recomendados trae TypeScript, ESLint, Tailwind, App Router y AGENTS.md, pero no `src/`), y `--yes` tampoco lo activa.
 
@@ -101,11 +99,11 @@ Gestor de paquetes pineado: **pnpm** (no `npm` ni `yarn`). Se instala vía Corep
 - `--no-agents-md` es obligatorio en este repo: `create-next-app` trae `--agents-md` activado por defecto y genera, además de `AGENTS.md`, un `CLAUDE.md` propio de una sola línea (`@AGENTS.md`) en la raíz — correrlo sin esta bandera **sobrescribe** este archivo gobernado de ~250 líneas con esa línea única, no lo duplica.
 - El scaffold corre in-place en la raíz de este repo (target `.`), que ya contiene `CLAUDE.md`, `README.md`, `docs/` y `.atl/`; si el CLI rechaza el directorio por archivos existentes, resolverlo sin perder estos archivos, y nunca dejar que un scaffold generado aparte sobrescriba este `CLAUDE.md` al fusionarse.
 - Si en algún momento se quiere el `AGENTS.md` que genera Next.js (puntero a su documentación empaquetada), no usar `--no-agents-md` para ese archivo específico, pero sí registrar el `AGENTS.md` resultante en el mapa de documentación (sección 7/8) para que no quede como archivo no gobernado; si no se quiere, mantener `--no-agents-md`.
-- En cuanto `package.json` exista, reemplazar cada `TBD` por el comando real (por ejemplo `pnpm install`, `pnpm dev`, `pnpm build`, `pnpm lint`) en el mismo PR que agrega el scaffold. Esta tabla es la primera fuente que va a consultar cualquier agente de IA antes de correr un comando — mantenerla desactualizada rompe esa confianza.
+- Nota de ejecución real: el CLI rechaza el nombre de directorio `Tienda` (mayúscula viola las reglas de nombres de npm), así que el scaffold se generó en un subdirectorio temporal con `--skip-install`, se movió a la raíz, y se fijaron a mano `"name": "tienda"` y `packageManager` en `package.json`.
 
 ## 5. Estructura del proyecto
 
-Todavía no existe código de aplicación, pero la organización de `src/` ya está decidida (ver [ADR-0006](docs/adr/0006-feature-based-structure-and-server-components.md)): feature-based, con React Server Components (RSC) por defecto y `"use client"` reservado para las hojas interactivas del árbol de componentes.
+La organización de `src/` (ver [ADR-0006](docs/adr/0006-feature-based-structure-and-server-components.md)): feature-based, con React Server Components (RSC) por defecto y `"use client"` reservado para las hojas interactivas del árbol de componentes. El scaffold ya materializa este árbol con `features/catalog/` iniciado (home de prueba de datos); `cart/` y `admin/` se crean al implementar sus features.
 
 ```
 src/

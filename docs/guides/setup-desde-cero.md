@@ -6,7 +6,7 @@ No repite el porqué de cada decisión (eso vive en los [ADRs](../adr/)) ni el q
 
 ## 1. Estado actual del proyecto
 
-Este repositorio está hoy en **fase de documentación** (ver [CLAUDE.md](../../CLAUDE.md), sección 2): existen los ADRs, los specs y esta guía, pero todavía no hay scaffold de Next.js ni proyecto de Supabase. Algunos pasos de esta guía dependen de archivos que aún no existen en el repo (`package.json`, `supabase/migrations/`, `supabase/seed.sql`) y están marcados **[tras el scaffold]**: se activan en cuanto ese scaffold se ejecute y esos archivos aparezcan — misma disciplina de los `TBD` que usa CLAUDE.md en su sección 4, para no documentar un comando que todavía no existe.
+El repositorio ya incluye el **scaffold completo** (ver [CLAUDE.md](../../CLAUDE.md), sección 2): Next.js 16 con `src/`, tooling, tema base, migraciones SQL y seed. Todos los pasos de esta guía están activos — lo único que cada fork debe crear por su cuenta es su propio proyecto de Supabase (sección 5) y su deploy (sección 7).
 
 ## 2. Cuentas y herramientas
 
@@ -28,7 +28,7 @@ Todo lo necesario para levantar el proyecto es gratuito.
 corepack enable
 ```
 
-La versión exacta de `pnpm` queda fijada en el campo `packageManager` de `package.json` en cuanto exista el scaffold — Corepack la resuelve sola en el primer `pnpm install`.
+La versión exacta de `pnpm` está fijada en el campo `packageManager` de `package.json` — Corepack la resuelve sola en el primer `pnpm install`. En Windows, si `corepack enable` falla con `EPERM` (Node instalado en `Program Files`), correr la terminal como administrador o usar el fallback `npm install -g pnpm`, que instala en espacio de usuario y funciona igual.
 
 ## 3. Fork y clone del repositorio
 
@@ -40,7 +40,7 @@ git clone https://github.com/<tu-usuario>/tienda.git
 cd tienda
 ```
 
-## 4. [tras el scaffold] Instalar dependencias y correr en local
+## 4. Instalar dependencias y correr en local
 
 ```
 pnpm install
@@ -54,8 +54,8 @@ Esto deja el proyecto corriendo en `http://localhost:3000`. En este punto el cat
 Cada fork crea **su propio** proyecto de Supabase — no se comparte uno entre forks (ver [ADR-0002](../adr/0002-supabase-vs-firebase.md)).
 
 1. **Crear el proyecto**: en [supabase.com](https://supabase.com), "New project". Elegir una región cercana a tus usuarios reales (por ejemplo, São Paulo para Colombia).
-2. **[tras el scaffold] Aplicar las migraciones**: en el dashboard, ir a **SQL Editor** y ejecutar, en orden, cada archivo de `supabase/migrations/` del repositorio. Definen `categories`, `products`, `product_images` (ver [data-model.md](../specs/data-model.md)) y sus policies de RLS. El SQL Editor es el camino inicial; Supabase CLI queda como camino de crecimiento opcional más adelante (ver [CLAUDE.md](../../CLAUDE.md), sección 4).
-3. **[tras el scaffold] Cargar datos de ejemplo (seed)**: en el mismo **SQL Editor**, después de las migraciones, ejecutar `supabase/seed.sql`. Inserta 2-3 categorías y 4-6 productos **ficticios** — sin PII ni credenciales reales (misma regla que las migraciones, ver [CLAUDE.md](../../CLAUDE.md), sección 9) — para poder verificar que el catálogo público y el admin funcionan de punta a punta antes de cargar un producto real. Los productos reales los agrega la dueña desde el panel admin, nunca por seed.
+2. **Aplicar las migraciones**: en el dashboard, ir a **SQL Editor** y ejecutar, en orden, cada archivo de `supabase/migrations/` del repositorio. Definen `categories`, `products`, `product_images` (ver [data-model.md](../specs/data-model.md)) y sus policies de RLS. El SQL Editor es el camino inicial; Supabase CLI queda como camino de crecimiento opcional más adelante (ver [CLAUDE.md](../../CLAUDE.md), sección 4).
+3. **Cargar datos de ejemplo (seed)**: en el mismo **SQL Editor**, después de las migraciones, ejecutar `supabase/seed.sql`. Inserta 2-3 categorías y 4-6 productos **ficticios** — sin PII ni credenciales reales (misma regla que las migraciones, ver [CLAUDE.md](../../CLAUDE.md), sección 9) — para poder verificar que el catálogo público y el admin funcionan de punta a punta antes de cargar un producto real. Los productos reales los agrega la dueña desde el panel admin, nunca por seed.
 4. **Crear el bucket de imágenes**: en **Storage**, crear un bucket llamado `product-images` como **público** — es una decisión explícita, no el default de Supabase (ver [admin-panel.md](../specs/admin-panel.md#almacenamiento--storage)).
 5. **Activar RLS**: las migraciones ya definen las policies (lectura pública de `is_active = true`; sin policies de escritura para `anon`/`authenticated` — las mutaciones las hace el servidor con la `service_role` key, ver [data-model.md](../specs/data-model.md#row-level-security-rls)); confirmar en **Authentication > Policies** que RLS quedó activado en las tres tablas.
 6. **Crear el único usuario admin**: en **Authentication > Users > Add user**, crear el usuario con email y una **contraseña fuerte y única** (12+ caracteres, generada y guardada en un gestor de contraseñas). Esta cuenta no tiene pantalla de registro pública, así que su contraseña es el único punto de fallo de acceso al panel — Supabase exige por defecto solo 6 caracteres como mínimo, y la protección automática contra contraseñas filtradas (HaveIBeenPwned) es exclusiva del plan Pro, no disponible en el tier gratuito de este proyecto. Se puede subir el mínimo de longitud y exigir clases de caracteres en **Authentication > Providers > Email** (no confundir con **Authentication > Policies**, usado en el paso anterior para RLS). Más adelante se puede sumar MFA por TOTP como capa adicional — es gratis en todos los planes de Supabase. No hay pantalla de registro visible en la UI — este es el único punto de alta desde la interfaz (ver [admin-panel.md](../specs/admin-panel.md), RF-1); la garantía real a nivel de API la da el paso siguiente, no la ausencia de UI.

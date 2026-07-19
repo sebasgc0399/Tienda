@@ -1,6 +1,6 @@
 # Documentación de Tienda
 
-Punto de entrada a la documentación técnica. El proyecto está en fase de documentación (sin scaffold de Next.js todavía) — ver [CLAUDE.md](../CLAUDE.md) para el estado completo.
+Punto de entrada a la documentación técnica. El proyecto tiene el scaffold de Next.js completo (tooling, tema base, esquema SQL y home de prueba de datos) — ver [CLAUDE.md](../CLAUDE.md) para el estado completo.
 
 ## ADR o spec: ¿cuál leo?
 
@@ -44,7 +44,7 @@ Punto de entrada a la documentación técnica. El proyecto está en fase de docu
 
 - Referencia de API.
 - CI/CD (Vercel es zero-config).
-- Estrategia de tests (todavía).
+- Estrategia de tests como documento formal — el runner (Vitest) ya está configurado y los tests viven junto al código (`*.test.ts`); se documentará una estrategia cuando la superficie de tests lo amerite.
 - Roadmap en `docs/` (se usan issues de GitHub).
 - Whitepaper de seguridad.
 - Documentación oficial de Next.js/Supabase (se enlaza, no se reproduce).
