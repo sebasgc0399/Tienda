@@ -37,6 +37,7 @@ Punto de entrada a la documentación técnica. El proyecto está en fase de docu
 
 | Doc | Descripción |
 |---|---|
+| [setup-desde-cero.md](guides/setup-desde-cero.md) | Puesta en marcha completa del proyecto desde cero: fork, Supabase propio, variables de entorno, deploy en Vercel y keep-alive. |
 | [fotografia-cheatsheet.md](guides/fotografia-cheatsheet.md) | Cómo fotografiar productos con el celular de forma consistente. |
 
 ## Qué NO documentamos

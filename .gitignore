@@ -4,3 +4,4 @@
 # Environment variables (see CLAUDE.md guardrails)
 .env
 .env.*
+!.env.example

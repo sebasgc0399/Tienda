@@ -41,7 +41,7 @@ Este repositorio nace como base documental para que otra persona lo continúe de
 3. Estevan ejecuta el scaffold de Next.js, configura su propio proyecto de Supabase y despliega su fork en su propia cuenta de Vercel (ver [ADR-0004](docs/adr/0004-vercel-deployment.md)).
 4. A partir de ahí, Estevan continúa el desarrollo de forma autónoma, apoyándose en los ADRs y specs de este repositorio para entender el porqué y el qué de cada decisión ya tomada.
 
-Este documento y los ADRs/specs enlazados son, en conjunto, el material de traspaso: no requieren una sesión de onboarding en vivo para ser entendidos.
+Este documento, los ADRs/specs enlazados y la guía paso a paso en [docs/guides/setup-desde-cero.md](docs/guides/setup-desde-cero.md) son, en conjunto, el material de traspaso: no requieren una sesión de onboarding en vivo para ser entendidos.
 
 ## 3. Stack
 
@@ -70,6 +70,8 @@ Ningún comando existe todavía porque el scaffold de Next.js no se ha ejecutado
 
 Node.js >= la versión mínima que exija la versión de Next.js que se scaffoldee. Hoy Next.js 16 requiere Node.js >= 20.9 (Node 18 no soportado; verificado en nextjs.org/docs, instalación v16.2.10).
 
+Gestor de paquetes pineado: **pnpm** (no `npm` ni `yarn`). Se instala vía Corepack, que ya viene con Node.js: `corepack enable`. La versión exacta queda fijada en el campo `packageManager` de `package.json` en cuanto exista el scaffold; Corepack la resuelve sola en el primer `pnpm install`.
+
 | Acción | Comando |
 |---|---|
 | Instalar dependencias | TBD |
@@ -80,19 +82,21 @@ Node.js >= la versión mínima que exija la versión de Next.js que se scaffolde
 | Generar tipos TypeScript desde el esquema de Supabase | TBD |
 | Aplicar migraciones SQL a Supabase | TBD |
 
+**Migraciones de base de datos (decisión ya tomada, independiente del scaffold):** viven como archivos SQL versionados en `supabase/migrations/`, committeados al repo. Se aplican al principio manualmente desde el SQL Editor del dashboard de Supabase, en orden; Supabase CLI (`supabase db push`) queda como camino de crecimiento opcional para más adelante, no como requisito inicial. Paso a paso operativo en [docs/guides/setup-desde-cero.md](docs/guides/setup-desde-cero.md).
+
 **Instrucción para quien haga el scaffold:**
 
 - Comando pineado — no usar los "recommended defaults" del CLI tal cual: `src/` es una pregunta opt-in con default "No" (el flujo de defaults recomendados trae TypeScript, ESLint, Tailwind, App Router y AGENTS.md, pero no `src/`), y `--yes` tampoco lo activa.
 
   ```
-  npx create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --no-agents-md
+  npx create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --no-agents-md --use-pnpm
   ```
 
   Esto fuerza el árbol `src/` que exige la sección 5 sin depender de lo que se responda en los prompts restantes que puedan quedar interactivos.
 - `--no-agents-md` es obligatorio en este repo: `create-next-app` trae `--agents-md` activado por defecto y genera, además de `AGENTS.md`, un `CLAUDE.md` propio de una sola línea (`@AGENTS.md`) en la raíz — correrlo sin esta bandera **sobrescribe** este archivo gobernado de ~250 líneas con esa línea única, no lo duplica.
 - El scaffold corre in-place en la raíz de este repo (target `.`), que ya contiene `CLAUDE.md`, `README.md`, `docs/` y `.atl/`; si el CLI rechaza el directorio por archivos existentes, resolverlo sin perder estos archivos, y nunca dejar que un scaffold generado aparte sobrescriba este `CLAUDE.md` al fusionarse.
 - Si en algún momento se quiere el `AGENTS.md` que genera Next.js (puntero a su documentación empaquetada), no usar `--no-agents-md` para ese archivo específico, pero sí registrar el `AGENTS.md` resultante en el mapa de documentación (sección 7/8) para que no quede como archivo no gobernado; si no se quiere, mantener `--no-agents-md`.
-- En cuanto `package.json` exista, reemplazar cada `TBD` por el comando real (por ejemplo `npm install`, `npm run dev`, `npm run build`, `npm run lint`) en el mismo PR que agrega el scaffold. Esta tabla es la primera fuente que va a consultar cualquier agente de IA antes de correr un comando — mantenerla desactualizada rompe esa confianza.
+- En cuanto `package.json` exista, reemplazar cada `TBD` por el comando real (por ejemplo `pnpm install`, `pnpm dev`, `pnpm build`, `pnpm lint`) en el mismo PR que agrega el scaffold. Esta tabla es la primera fuente que va a consultar cualquier agente de IA antes de correr un comando — mantenerla desactualizada rompe esa confianza.
 
 ## 5. Estructura del proyecto
 
