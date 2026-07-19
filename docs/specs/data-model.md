@@ -42,7 +42,7 @@ Definir el esquema de base de datos (Postgres/Supabase) del catálogo: `categori
 
 - **Categoría con productos asociados**: no se elimina físicamente; se desactiva con `is_active = false`. La FK `category_id` no debe permitir borrar una categoría que aún tenga productos.
 - **Producto sin imágenes**: `product_images` puede estar vacío para un producto; la UI muestra un placeholder (comportamiento definido en `public-catalog.md`, no en este documento).
-- **Más de una imagen marcada `is_primary`**: el modelo no impone esa unicidad a nivel de base de datos; es responsabilidad de la capa de aplicación mantener como máximo una imagen principal por producto.
+- **Más de una imagen marcada `is_primary`**: el índice único parcial de la sección "Resuelta: unicidad de `is_primary`" (más abajo) lo rechaza a nivel de base de datos; la capa de aplicación solo necesita desmarcar la imagen anterior antes de marcar la nueva, no reforzar la unicidad por su cuenta.
 - **Archivo huérfano en Storage**: si se elimina una fila de `product_images` sin eliminar el archivo correspondiente en el bucket, el archivo queda huérfano. Requiere manejo explícito en la aplicación (no hay trigger de base de datos para esto).
 
 ## Touchpoints de datos
@@ -141,5 +141,16 @@ Si alguna vez se necesita que el cliente escriba directamente sujeto a RLS (sin 
 
 ## Preguntas abiertas
 
-- ¿La unicidad de `is_primary` por producto se refuerza con un índice parcial en Postgres, o queda como responsabilidad exclusiva de la capa de aplicación?
 - ¿Se necesita un índice compuesto (`category_id`, `display_order`) para el listado por categoría, o el volumen esperado del catálogo no lo justifica?
+
+### Resuelta: unicidad de `is_primary`
+
+Se refuerza a nivel de base de datos con un índice único parcial, no solo en la capa de aplicación:
+
+```sql
+create unique index one_primary_image_per_product
+  on product_images (product_id)
+  where is_primary;
+```
+
+Al indexar solo las filas con `is_primary = true`, el índice permite cualquier cantidad de imágenes con `is_primary = false` por producto, pero rechaza un segundo `insert`/`update` que intente dejar dos imágenes en `true` para el mismo `product_id`. La capa de aplicación (Server Action de "marcar como principal") sigue encargándose de desmarcar la imagen anterior en la misma transacción, pero el índice es la garantía real ante cualquier bug o escritura fuera de ese flujo.

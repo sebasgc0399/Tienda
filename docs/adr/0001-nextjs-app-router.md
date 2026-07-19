@@ -28,3 +28,4 @@ Se usa Next.js con App Router como framework principal del proyecto.
 - Un solo repositorio y un solo framework cubren público y admin, simplificando el mantenimiento para un desarrollador único.
 - Las mutaciones del admin se implementan con Server Actions, sin necesidad de exponer una API REST/GraphQL adicional.
 - El equipo queda atado a las convenciones y ciclo de releases de Next.js App Router.
+- Next.js 16 introduce Cache Components (directiva `use cache`) como modelo de cacheo opt-in de cara al futuro; para este proyecto el modelo documentado y default sigue siendo ISR clásico (ver sección 4 de [CLAUDE.md](../../CLAUDE.md)), sin activar el flag `cacheComponents`.

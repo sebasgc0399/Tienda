@@ -54,9 +54,9 @@ Los montos se formatean como pesos colombianos (COP) sin decimales, con prefijo 
 ## Casos borde
 
 - **Carrito vacío**: el botón "Pedir por WhatsApp" queda deshabilitado o no se muestra; no se genera ningún mensaje ni se abre `wa.me`.
-- **Longitud máxima de la URL `wa.me`**: pedidos con muchos ítems o nombres largos pueden generar una URL extensa. `wa.me` tolera URLs largas, pero como salvaguarda se debe advertir o truncar el mensaje cuando supere un umbral razonable (decisión de implementación; ver preguntas abiertas).
+- **Longitud máxima de la URL `wa.me`**: `wa.me` no publica un límite propio, así que la URL final queda sujeta a los límites prácticos de navegadores/proxies — el umbral seguro citado de forma consistente entre navegadores y servidores es ~2.000 caracteres (hereda el límite histórico de Internet Explorer, 2.083 caracteres, el más restrictivo documentado). Umbral adoptado: **2.000 caracteres sobre la URL completa** (`https://wa.me/<numero>?text=<mensaje codificado>`). Si al construirla se supera ese umbral, se trunca la lista de ítems del mensaje — nunca el total — reemplazando los últimos ítems por una línea `y N productos más`; el total siempre se calcula sobre el carrito completo, no sobre los ítems mostrados. El truncado se hace con el método seguro para grafemas del caso borde siguiente, nunca cortando la URL ya codificada.
 - **Producto no disponible entre añadir y checkout**: el carrito no valida disponibilidad ni precio contra la base de datos en cada render. Antes de generar el mensaje se revalida `availability`, `is_active` **y `price`** del producto contra `products`; si `availability`/`is_active` cambiaron, se marca el ítem y se pide confirmación o remoción antes de continuar. El subtotal por ítem y el total del mensaje se recalculan siempre a partir del `price` recién leído de la base de datos, nunca del valor guardado en `localStorage` — cierra la vía más directa para manipular el precio desde devtools antes de enviar el pedido, sin costo adicional porque la fila del producto ya se está consultando en este mismo paso.
-- **Caracteres especiales y emojis**: nombres de producto con tildes, ñ u otros caracteres UTF-8 se codifican correctamente porque `encodeURIComponent` maneja Unicode de forma nativa; no se requiere sanitización adicional.
+- **Caracteres especiales y emojis**: nombres de producto con tildes, ñ u otros caracteres UTF-8 se codifican correctamente porque `encodeURIComponent` maneja Unicode de forma nativa; no se requiere sanitización adicional. Si un nombre con emoji necesita truncarse (caso borde anterior), el corte debe hacerse con un método seguro para grafemas (`Intl.Segmenter`, o iterar por code points con `[...string]`), nunca con `string.slice`/`substring` crudo por índice UTF-16: cortar a la mitad de un par subrogado produce una secuencia inválida que hace fallar `encodeURIComponent` (`URIError`).
 
 ## Nota operativa
 
@@ -70,4 +70,4 @@ El mensaje de WhatsApp lo arma el navegador de la clienta a partir de `localStor
 
 ## Preguntas abiertas
 
-- Umbral exacto de longitud de mensaje a partir del cual mostrar un aviso de "pedido muy largo" — se define en la etapa de implementación.
+- Ninguna.

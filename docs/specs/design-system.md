@@ -76,8 +76,8 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 | Zona | Regla |
 |---|---|
 | Galería (desktop) | Columna principal, scroll vertical editorial; todos los thumbnails visibles, sin truncar. |
-| Buy-box (desktop) | `position: sticky` a la derecha — nombre, precio, CTA "Añadir al carrito" (RF-6 de `public-catalog.md`). |
-| Buy-bar (mobile) | Fija; precio + CTA "Añadir al carrito". Aparece vía `IntersectionObserver` cuando el CTA principal sale de la vista, re-exponiendo esa misma acción. "Pedir por WhatsApp" es una acción del carrito (RF-7 de `cart-whatsapp-checkout.md`), no del PDP. |
+| Buy-box (desktop) | `position: sticky` a la derecha — nombre, precio, CTA "Añadir al carrito" (RF-6 de [public-catalog.md](./public-catalog.md)). |
+| Buy-bar (mobile) | Fija; precio + CTA "Añadir al carrito". Aparece vía `IntersectionObserver` cuando el CTA principal sale de la vista, re-exponiendo esa misma acción. "Pedir por WhatsApp" es una acción del carrito (RF-7 de [cart-whatsapp-checkout.md](./cart-whatsapp-checkout.md)), no del PDP. |
 | Animación de buy-bar | Solo `transform`/`opacity` (nunca `height`/`top`) para evitar layout shift. Respeta `prefers-reduced-motion` (obligatorio, ver [ADR-0007](../adr/0007-motion-strategy-css-radix.md)). |
 | Tap target | Mínimo 44×44px (WCAG 2.5.5). |
 
@@ -105,6 +105,8 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 
 Máximo 2 familias tipográficas por dirección: un display (hero, títulos de categoría) sobre un cuerpo sans.
 
+**Carga de fuentes**: Fraunces e Inter se cargan con `next/font/google` y `subsets: ['latin']`. El subset `latin` de Google Fonts ya cubre los caracteres del español (á, é, í, ó, ú, ñ, ü, ¿, ¡ — todos dentro del bloque Latin-1 Supplement); `latin-ext` no es necesario acá, ese subset solo suma cobertura para lenguas de Europa central/oriental y vietnamita. `next/font` descarga los archivos en build time y los sirve self-hosted desde el propio dominio — sin request en runtime a Google — y ajusta automáticamente las métricas de la fuente de fallback para minimizar CLS.
+
 ## Escenarios de usuario
 
 1. Una desarrolladora agrega una pantalla nueva: consulta esta spec, reutiliza los tokens de tipografía/espaciado y elige el componente shadcn correspondiente en vez de definir estilos ad hoc.
@@ -121,8 +123,8 @@ Máximo 2 familias tipográficas por dirección: un display (hero, títulos de c
 ## Touchpoints de datos
 
 - No hay tabla propia de este documento; los tokens viven en `globals.css` (bloque `@theme` de Tailwind v4).
-- `product_images.alt_text` alimenta el atributo `alt` de las imágenes (ver `data-model.md`).
-- `categories.display_order` y `products.display_order` determinan el orden en el mega-menú y en las listas (ver `data-model.md`).
+- `product_images.alt_text` alimenta el atributo `alt` de las imágenes (ver [data-model.md](./data-model.md)).
+- `categories.display_order` y `products.display_order` determinan el orden en el mega-menú y en las listas (ver [data-model.md](./data-model.md)).
 
 ## Preguntas abiertas
 

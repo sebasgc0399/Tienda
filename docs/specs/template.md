@@ -1,5 +1,7 @@
 # Spec: <nombre de la feature>
 
+> Este esqueleto es el mínimo fijo. Un spec puede agregar secciones extra cuando la feature lo justifica (por ejemplo `Seguridad`, `Formato del mensaje`, `Patrones de UI`) — no es una desviación silenciosa del formato, es parte esperada del documento.
+
 ## Objetivo
 
 <Qué resuelve esta feature y para quién, en 1-2 líneas.>
