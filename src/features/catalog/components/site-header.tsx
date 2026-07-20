@@ -1,8 +1,9 @@
 import { MessageCircle } from "lucide-react"
 import Link from "next/link"
 
+import { CartSheet } from "@/features/cart/components/cart-sheet"
+
 import type { CategorySummary } from "../types"
-import { CartButton } from "./cart-button"
 import { CategoryMegaMenu } from "./category-mega-menu"
 import { MobileNav } from "./mobile-nav"
 
@@ -26,7 +27,7 @@ export function SiteHeader({ categories }: SiteHeaderProps) {
         <CategoryMegaMenu categories={categories} className="hidden lg:flex" />
 
         <div className="flex items-center gap-1">
-          <CartButton />
+          <CartSheet />
           {whatsappNumber ? (
             <a
               href={`https://wa.me/${whatsappNumber}`}

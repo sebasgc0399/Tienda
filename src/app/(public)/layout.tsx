@@ -1,3 +1,4 @@
+import { CartProvider } from "@/features/cart/components/cart-provider"
 import { getCategories } from "@/features/catalog/actions/get-categories"
 import { SiteFooter } from "@/features/catalog/components/site-footer"
 import { SiteHeader } from "@/features/catalog/components/site-header"
@@ -15,10 +16,10 @@ export default async function PublicLayout({
   const categories = await getCategories()
 
   return (
-    <>
+    <CartProvider>
       <SiteHeader categories={categories} />
       <main className="flex-1">{children}</main>
       <SiteFooter />
-    </>
+    </CartProvider>
   )
 }

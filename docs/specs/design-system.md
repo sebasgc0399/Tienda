@@ -81,6 +81,19 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 | Animación de buy-bar | Solo `transform`/`opacity` (nunca `height`/`top`) para evitar layout shift. Respeta `prefers-reduced-motion` (obligatorio, ver [ADR-0007](../adr/0007-motion-strategy-css-radix.md)). |
 | Tap target | Mínimo 44×44px (WCAG 2.5.5). |
 
+### Carrito (Sheet lateral)
+
+| Elemento | Regla |
+|---|---|
+| Trigger + badge | Icono `ShoppingBag` en un `Button` ghost de 44×44px en el header. Badge circular sobre la esquina superior derecha con la cantidad total de unidades; oculto con el carrito vacío. El badge solo aparece tras la hidratación del cliente (el conteo vive en `localStorage`), nunca en el render del servidor. |
+| Fila de ítem | Anatomía fija: nombre (`line-clamp-2`) → precio unitario → stepper de cantidad → subtotal de línea → botón "Quitar". Sin miniatura en v1. |
+| Stepper de cantidad | Controles `−` y `+` de mínimo 44×44px (WCAG 2.5.5). `−` se deshabilita en cantidad 1: el mínimo es 1 y para llegar a 0 se usa "Quitar" (ver [cart-whatsapp-checkout.md](./cart-whatsapp-checkout.md), RF-4). |
+| Total | Al pie del sheet (`SheetFooter`): etiqueta "Total" + monto en COP. |
+| Estado vacío | Copy centrado "Tu carrito está vacío" + subtexto "Agrega productos desde el catálogo." El botón "Pedir por WhatsApp" no se muestra con el carrito vacío. |
+| Checkout | Botón "Pedir por WhatsApp" al pie; deshabilitado mientras haya ítems no disponibles sin quitar. Abre `wa.me` en pestaña nueva (ver [cart-whatsapp-checkout.md](./cart-whatsapp-checkout.md), RF-7). |
+| Revalidación | Antes de abrir WhatsApp se revalida disponibilidad y precio contra la base de datos; los ítems con cambios se marcan en su fila y los no disponibles deben quitarse antes de continuar. |
+| Motion | Apertura/cierre del `Sheet` vía `data-state` (ver [ADR-0007](../adr/0007-motion-strategy-css-radix.md)); respeta `prefers-reduced-motion`. |
+
 ### Home
 
 | Sección | Regla |
