@@ -1,7 +1,7 @@
 import "server-only"
 
 import { createAdminClient } from "@/lib/supabase/admin"
-import type { Category, Product } from "@/types/database"
+import type { Category, Product, ProductImage } from "@/types/database"
 
 import type {
   AdminCategoryRow,
@@ -187,6 +187,39 @@ export async function getCategoryOptions(): Promise<CategoryOption[]> {
 
   if (error) {
     throw new Error(`Failed to load categories: ${error.message}`)
+  }
+
+  return data ?? []
+}
+
+// Same self-guard as the other admin reads: product_images has no is_active
+// of its own (data-model.md, RF-2), but this still goes through
+// createAdminClient() alongside every other admin read, so it checks the
+// session itself rather than relying on the caller. Ordered by
+// display_order (RF-7 gallery order) with created_at as the tiebreaker for
+// rows that share a display_order (e.g. freshly uploaded, still at the
+// default 0).
+export async function getProductImages(
+  productId: string,
+): Promise<ProductImage[]> {
+  const user = await getAdminUser()
+  if (!user) {
+    throw new SessionExpiredError()
+  }
+
+  const admin = createAdminClient()
+
+  const { data, error } = await admin
+    .from("product_images")
+    .select("*")
+    .eq("product_id", productId)
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    throw new Error(
+      `Failed to load images for product "${productId}": ${error.message}`,
+    )
   }
 
   return data ?? []
