@@ -200,6 +200,10 @@ export function ProductForm(props: ProductFormProps) {
           <Label htmlFor="category_id">Categoría</Label>
           <Select
             name="category_id"
+            items={props.categories.map((category) => ({
+              value: category.id,
+              label: category.name,
+            }))}
             defaultValue={isEdit ? props.product.category_id : undefined}
             required
           >
@@ -221,6 +225,7 @@ export function ProductForm(props: ProductFormProps) {
           <Label htmlFor="availability">Disponibilidad</Label>
           <Select
             name="availability"
+            items={AVAILABILITY_OPTIONS}
             defaultValue={isEdit ? props.product.availability : "in_stock"}
             required
           >

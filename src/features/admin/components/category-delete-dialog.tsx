@@ -133,6 +133,10 @@ export function CategoryDeleteDialog({
     >
       {productCount > 0 && canReassign ? (
         <Select
+          items={otherCategories.map((option) => ({
+            value: option.id,
+            label: option.name,
+          }))}
           value={targetId ?? undefined}
           onValueChange={(value) => setTargetId(value as string)}
         >

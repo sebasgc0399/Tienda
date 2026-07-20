@@ -42,7 +42,12 @@ export function AvailabilitySelect({
   }
 
   return (
-    <Select value={value} onValueChange={handleValueChange} disabled={pending}>
+    <Select
+      items={AVAILABILITY_OPTIONS}
+      value={value}
+      onValueChange={handleValueChange}
+      disabled={pending}
+    >
       <SelectTrigger aria-label={label} size="sm">
         <SelectValue />
       </SelectTrigger>
