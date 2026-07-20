@@ -110,6 +110,18 @@ function pickPrimaryImagePath(
 // after the fetch, by category display_order then the product's own
 // display_order — a product's display_order is only meaningful within its
 // own category (data-model.md, products.display_order), not globally.
+//
+// category_id is a required tiebreaker between those two keys, not
+// cosmetic: category display_order is only unique by convention (the admin
+// UI keeps it sequential via reorderCategory, but nothing in the schema
+// enforces it), so two categories can legitimately tie on display_order.
+// Without a tiebreaker, a tie falls straight through to the product-level
+// sort, which compares display_order across every product regardless of
+// category and interleaves rows from the tied categories — ProductList's
+// groupByCategory then sees a non-contiguous run and emits the same
+// category twice. category_id (the product's own FK, already on every
+// row) is a primary key, so it can never itself tie — that's what
+// actually guarantees each category's rows end up contiguous.
 export async function getAdminProducts(): Promise<AdminProductRow[]> {
   const user = await getAdminUser()
   if (!user) {
@@ -139,11 +151,15 @@ export async function getAdminProducts(): Promise<AdminProductRow[]> {
     }
   })
 
-  withCategoryOrder.sort((a, b) =>
-    a.categoryOrder !== b.categoryOrder
-      ? a.categoryOrder - b.categoryOrder
-      : a.row.display_order - b.row.display_order,
-  )
+  withCategoryOrder.sort((a, b) => {
+    if (a.categoryOrder !== b.categoryOrder) {
+      return a.categoryOrder - b.categoryOrder
+    }
+    if (a.row.category_id !== b.row.category_id) {
+      return a.row.category_id.localeCompare(b.row.category_id)
+    }
+    return a.row.display_order - b.row.display_order
+  })
 
   return withCategoryOrder.map((item) => item.row)
 }

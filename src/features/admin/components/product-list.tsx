@@ -25,21 +25,25 @@ type ProductGroup = {
   products: AdminProductRow[]
 }
 
-// getAdminProducts (lib/queries.ts) already sorts by category display_order
-// then by each product's own display_order, so same-category rows are
-// always contiguous — a group boundary is just "the next row's category_id
-// differs from the current group's". This also means ▲▼ boundaries
-// (disableUp/disableDown) become a per-group index check instead of a
-// global one: first item of a group disables ▲, last disables ▼.
+// getAdminProducts (lib/queries.ts) sorts by category display_order, then
+// category_id, then the product's own display_order — contiguous by
+// category in practice. This still accumulates into a Map keyed by
+// category_id (preserving first-seen insertion order) instead of assuming
+// that contiguity by comparing against only the last-seen group: a
+// non-contiguous input (e.g. a future regression in that sort) degrades to
+// re-using the existing group instead of silently emitting the same
+// category as two separate groups with duplicate React keys — the bug this
+// replaced. ▲▼ boundaries (disableUp/disableDown) are a per-group index
+// check: first item of a group disables ▲, last disables ▼.
 function groupByCategory(products: AdminProductRow[]): ProductGroup[] {
-  const groups: ProductGroup[] = []
+  const groups = new Map<string, ProductGroup>()
 
   for (const product of products) {
-    const currentGroup = groups.at(-1)
-    if (currentGroup && currentGroup.categoryId === product.category_id) {
-      currentGroup.products.push(product)
+    const group = groups.get(product.category_id)
+    if (group) {
+      group.products.push(product)
     } else {
-      groups.push({
+      groups.set(product.category_id, {
         categoryId: product.category_id,
         categoryName: product.category_name,
         products: [product],
@@ -47,10 +51,10 @@ function groupByCategory(products: AdminProductRow[]): ProductGroup[] {
     }
   }
 
-  return groups
+  return [...groups.values()]
 }
 
-const TABLE_COLUMN_COUNT = 9
+const TABLE_COLUMN_COUNT = 8
 
 function ProductThumb({ storagePath }: { storagePath: string | null }) {
   if (!storagePath) {
@@ -137,7 +141,6 @@ export function ProductList({ products }: ProductListProps) {
           <tr>
             <th className="py-2 pr-4 font-medium">Foto</th>
             <th className="py-2 pr-4 font-medium">Nombre</th>
-            <th className="py-2 pr-4 font-medium">Categoría</th>
             <th className="py-2 pr-4 font-medium">Precio</th>
             <th className="py-2 pr-4 font-medium">Disponibilidad</th>
             <th className="py-2 pr-4 font-medium">Destacado</th>
@@ -174,7 +177,6 @@ export function ProductList({ products }: ProductListProps) {
                         {product.slug}
                       </div>
                     </td>
-                    <td className="py-3 pr-4">{product.category_name}</td>
                     <td className="py-3 pr-4">
                       {formatCurrency(product.price)}
                     </td>
@@ -237,9 +239,6 @@ export function ProductList({ products }: ProductListProps) {
                         <ProductNameLink product={product} />
                         <div className="text-muted-foreground text-xs">
                           {product.slug}
-                        </div>
-                        <div className="text-muted-foreground text-xs">
-                          {product.category_name}
                         </div>
                         <div className="text-sm">
                           {formatCurrency(product.price)}
