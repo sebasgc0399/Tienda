@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useActionState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -33,7 +34,7 @@ export function LoginForm({ expired }: LoginFormProps) {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Panel de administración</CardTitle>
+        <CardTitle className="text-xl">Panel de administración</CardTitle>
         <CardDescription>Ingresa con tu correo y contraseña.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -89,6 +90,15 @@ export function LoginForm({ expired }: LoginFormProps) {
             Ingresar
           </Button>
         </form>
+
+        <p className="mt-4 text-center">
+          <Link
+            href="/"
+            className="text-muted-foreground hover:text-foreground text-sm hover:underline"
+          >
+            ← Volver a la tienda
+          </Link>
+        </p>
       </CardContent>
     </Card>
   )
