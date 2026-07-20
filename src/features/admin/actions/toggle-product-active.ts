@@ -10,10 +10,9 @@ import { revalidatePublicCatalog } from "../lib/revalidate"
 import { withAdmin } from "../lib/with-admin"
 
 // RF-8 (admin-panel.md): inline is_active toggle from the product list —
-// both directions (unlike softDeleteProduct, which only ever deactivates
-// and carries its own confirmation copy). Also what ActivateProductButton
-// calls to reactivate a product without a confirmation dialog, since that
-// direction isn't destructive.
+// both directions, reversibly, from the single Activo Switch. This is the
+// only activation/deactivation path for products (admin UX audit session 2,
+// finding A) — no separate destructive-with-confirmation action exists.
 export async function toggleProductActive(
   id: string,
   isActive: boolean,
