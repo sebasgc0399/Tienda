@@ -80,7 +80,8 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 
 | Zona | Regla |
 |---|---|
-| Galería (desktop) | Columna principal, scroll vertical editorial; todos los thumbnails visibles, sin truncar. |
+| Galería (desktop) | Master-detail (referencia Clemont): riel vertical de miniaturas a la izquierda, `position: sticky` bajo el header, con `max-height` acotado y scroll interno propio — todas las miniaturas son alcanzables sin hacer crecer la página. A la derecha, una única imagen principal grande que cambia al seleccionar una miniatura (sin scroll por todas las fotos). La miniatura activa se marca con un borde de acento. Cambio instantáneo entre fotos, sin librería de animación (ADR-0007). |
+| Galería (mobile) | Imagen principal a ancho completo primero, seguida de una tira horizontal de miniaturas con scroll propio. Misma miniatura activa con borde de acento que en desktop. |
 | Buy-box (desktop) | `position: sticky` a la derecha — nombre, precio, CTA "Añadir al carrito" (RF-6 de [public-catalog.md](./public-catalog.md)). |
 | Buy-bar (mobile) | Fija; precio + CTA "Añadir al carrito". Aparece vía `IntersectionObserver` cuando el CTA principal sale de la vista, re-exponiendo esa misma acción. "Pedir por WhatsApp" es una acción del carrito (RF-7 de [cart-whatsapp-checkout.md](./cart-whatsapp-checkout.md)), no del PDP. |
 | Animación de buy-bar | Solo `transform`/`opacity` (nunca `height`/`top`) para evitar layout shift. Respeta `prefers-reduced-motion` (obligatorio, ver [ADR-0007](../adr/0007-motion-strategy-css-radix.md)). |
