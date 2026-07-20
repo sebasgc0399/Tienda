@@ -24,7 +24,7 @@ function FooterColumn({ title, children }: FooterColumnProps) {
           {title}
           <ChevronDown
             aria-hidden="true"
-            className="size-4 transition-transform group-open:rotate-180"
+            className="size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none"
           />
         </summary>
         <div className="text-muted-foreground mt-3 flex flex-col gap-2 text-sm">

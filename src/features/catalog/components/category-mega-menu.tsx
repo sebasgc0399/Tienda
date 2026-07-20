@@ -35,9 +35,9 @@ export function CategoryMegaMenu({
     closeTimer.current = null
   }
 
-  // Timers are only for pointer hover-intent; keyboard focus and clicks
-  // react immediately (a timed delay on a deliberate keyboard/click action
-  // would just feel like lag, not an accidental-hover guard).
+  // Timers are only for pointer hover-intent; clicks react immediately (a
+  // timed delay on a deliberate click would just feel like lag, not an
+  // accidental-hover guard).
   function handleMouseEnter() {
     clearTimers()
     openTimer.current = setTimeout(() => setOpen(true), OPEN_DELAY_MS)
@@ -53,9 +53,14 @@ export function CategoryMegaMenu({
     setOpen((current) => !current)
   }
 
+  // Tabbing onto the trigger must NOT open the panel — otherwise the Enter
+  // keypress that follows toggles it straight back closed (open-on-focus,
+  // then the click from Enter flips it off). Focus only cancels a pending
+  // hover timer so a stray close doesn't fire while keyboard focus is
+  // inside the widget; opening on keyboard is left to the trigger's click
+  // handler (native Enter/Space activation).
   function handleFocus() {
     clearTimers()
-    setOpen(true)
   }
 
   function handleBlur(event: React.FocusEvent<HTMLElement>) {

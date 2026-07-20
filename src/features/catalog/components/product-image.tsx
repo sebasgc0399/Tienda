@@ -44,11 +44,11 @@ export function ProductImage({
     <div className="relative aspect-square overflow-hidden rounded-lg">
       <Image
         src={getPublicImageUrl(image.storage_path)}
-        alt={image.alt_text ?? name}
+        alt={image.alt_text || name}
         fill
         sizes={sizes}
         priority={priority}
-        className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        className="object-cover transition-transform duration-300 motion-reduce:transition-none motion-reduce:group-hover:scale-100 [@media(hover:hover)]:group-hover:scale-105"
       />
     </div>
   )
