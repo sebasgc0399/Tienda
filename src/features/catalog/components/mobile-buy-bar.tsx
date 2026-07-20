@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react"
 
+import { AddToCartButton } from "@/features/cart/components/add-to-cart-button"
 import { formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 import type { ProductAvailability } from "@/types/database"
 
-import { AddToCartButton } from "./add-to-cart-button"
-
 type MobileBuyBarProps = {
+  id: string
+  slug: string
   name: string
   price: number
   availability: ProductAvailability
@@ -22,6 +23,8 @@ type MobileBuyBarProps = {
 // there's no flash before the sentinel's real position is known. Animates
 // only transform/opacity — never height/top — to avoid layout shift.
 export function MobileBuyBar({
+  id,
+  slug,
   name,
   price,
   availability,
@@ -61,7 +64,13 @@ export function MobileBuyBar({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <span className="text-lg font-semibold">{formatCurrency(price)}</span>
           <div className="w-40">
-            <AddToCartButton availability={availability} productName={name} />
+            <AddToCartButton
+              productId={id}
+              slug={slug}
+              name={name}
+              price={price}
+              availability={availability}
+            />
           </div>
         </div>
       </div>

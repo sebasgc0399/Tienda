@@ -82,11 +82,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <div className="lg:sticky lg:top-20 lg:self-start">
           <MobileBuyBar
+            id={product.id}
+            slug={product.slug}
             name={product.name}
             price={product.price}
             availability={product.availability}
           >
             <ProductBuyBox
+              id={product.id}
+              slug={product.slug}
               name={product.name}
               price={product.price}
               availability={product.availability}

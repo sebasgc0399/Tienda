@@ -1,10 +1,12 @@
+import { AddToCartButton } from "@/features/cart/components/add-to-cart-button"
 import { formatCurrency } from "@/lib/format-currency"
 import type { ProductAvailability } from "@/types/database"
 
-import { AddToCartButton } from "./add-to-cart-button"
 import { AvailabilityBadge } from "./availability-badge"
 
 type ProductBuyBoxProps = {
+  id: string
+  slug: string
   name: string
   price: number
   availability: ProductAvailability
@@ -15,6 +17,8 @@ type ProductBuyBoxProps = {
 // (lg:sticky lg:top-20 lg:self-start), this component just renders the box
 // (docs/specs/design-system.md, PDP > Buy-box).
 export function ProductBuyBox({
+  id,
+  slug,
   name,
   price,
   availability,
@@ -25,7 +29,13 @@ export function ProductBuyBox({
       <h1 className="font-display text-3xl md:text-4xl">{name}</h1>
       <p className="text-2xl font-semibold">{formatCurrency(price)}</p>
       <AvailabilityBadge availability={availability} />
-      <AddToCartButton availability={availability} productName={name} />
+      <AddToCartButton
+        productId={id}
+        slug={slug}
+        name={name}
+        price={price}
+        availability={availability}
+      />
       <p className="text-muted-foreground whitespace-pre-line">{description}</p>
     </div>
   )

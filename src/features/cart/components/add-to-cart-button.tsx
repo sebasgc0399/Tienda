@@ -1,25 +1,31 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { isPurchasable } from "@/features/catalog/lib/availability"
 import type { ProductAvailability } from "@/types/database"
 
-import { isPurchasable } from "../lib/availability"
+import { useCart } from "./cart-provider"
 
 type AddToCartButtonProps = {
+  productId: string
+  slug: string
+  name: string
+  price: number
   availability: ProductAvailability
-  productName: string
 }
 
-// The cart feature doesn't exist yet — this ships the button's full visual
-// contract now (plan's "Carrito sin feature cart" seam) so features/cart can
-// wire the real action later without touching this component's markup.
 // Feedback stays purely tactile (press scale) on purpose: a success-style
-// label would be a false confirmation, since nothing is actually added yet.
+// label would be a false confirmation on top of the real one — the header
+// badge incrementing is the visible confirmation that the item was added.
 // prefers-reduced-motion disables the scale (ADR-0007).
 export function AddToCartButton({
+  productId,
+  slug,
+  name,
+  price,
   availability,
-  productName,
 }: AddToCartButtonProps) {
+  const { add } = useCart()
   const disabled = !isPurchasable(availability)
 
   return (
@@ -29,12 +35,10 @@ export function AddToCartButton({
       disabled={disabled}
       aria-label={
         disabled
-          ? `Añadir ${productName} al carrito — no disponible`
-          : `Añadir ${productName} al carrito`
+          ? `Añadir ${name} al carrito — no disponible`
+          : `Añadir ${name} al carrito`
       }
-      onClick={() => {
-        // TODO(cart): call cart add action when features/cart lands
-      }}
+      onClick={() => add({ productId, slug, name, price, availability })}
       className="min-h-11 w-full transition-transform active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
     >
       Añadir al carrito
