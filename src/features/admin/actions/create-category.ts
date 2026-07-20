@@ -8,7 +8,8 @@ import { createAdminClient } from "@/lib/supabase/admin"
 
 import type { ActionResult } from "../lib/action-result"
 import { fail, ok } from "../lib/action-result"
-import { resolveUniqueSlug } from "../lib/resolve-unique-slug"
+import type { SlugSource } from "../lib/resolve-unique-slug"
+import { resolveSlugOrError } from "../lib/resolve-unique-slug"
 import { revalidatePublicCatalog } from "../lib/revalidate"
 import { slugify } from "../lib/slugify"
 import { withAdmin } from "../lib/with-admin"
@@ -26,6 +27,9 @@ export async function createCategory(
     const name = formData.get("name")
     const slugInput = formData.get("slug")
     const description = formData.get("description")
+    const slugSourceInput = formData.get("slugSource")
+    const slugSource: SlugSource =
+      slugSourceInput === "manual" ? "manual" : "auto"
 
     if (typeof name !== "string" || name.trim() === "") {
       return fail<CreateCategoryData>("El nombre es obligatorio", {
@@ -39,8 +43,31 @@ export async function createCategory(
         : name,
     )
 
+    // Defensive fallback: a name made entirely of punctuation (e.g. "!!!")
+    // slugifies to "" — never insert an empty slug when it was auto-derived
+    // and the owner never typed one by hand.
+    if (slugSource === "auto" && base === "") {
+      return fail<CreateCategoryData>(
+        "El nombre debe incluir al menos una letra o número.",
+        { name: "El nombre debe incluir al menos una letra o número." },
+      )
+    }
+
     const admin = createAdminClient()
-    const slug = await resolveUniqueSlug(admin, "categories", base)
+    const resolution = await resolveSlugOrError(
+      admin,
+      "categories",
+      base,
+      slugSource,
+    )
+
+    if (!resolution.ok) {
+      return fail<CreateCategoryData>("Ese slug ya está en uso, elige otro.", {
+        slug: "Ese slug ya está en uso, elige otro.",
+      })
+    }
+
+    const slug = resolution.slug
 
     const { data, error } = await admin
       .from("categories")

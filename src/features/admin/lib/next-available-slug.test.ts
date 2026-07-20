@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { nextAvailableSlug } from "./next-available-slug"
+import { isSlugTaken, nextAvailableSlug } from "./next-available-slug"
 
 describe("nextAvailableSlug", () => {
   it("returns the base slug when it is free", () => {
@@ -35,5 +35,23 @@ describe("nextAvailableSlug", () => {
 
   it("treats a base that already ends in a numeric suffix as a literal string", () => {
     expect(nextAvailableSlug("promo-2", ["promo-2"])).toBe("promo-2-2")
+  })
+})
+
+describe("isSlugTaken", () => {
+  it("returns false when the slug is free", () => {
+    expect(isSlugTaken("ramo-rosas", [])).toBe(false)
+  })
+
+  it("returns true when a different row already uses the slug", () => {
+    expect(isSlugTaken("ramo-rosas", ["ramo-rosas"])).toBe(true)
+  })
+
+  it("returns false when the only match is the row's own current slug", () => {
+    expect(isSlugTaken("ramo-rosas", ["ramo-rosas"], "ramo-rosas")).toBe(false)
+  })
+
+  it("ignores unrelated taken slugs", () => {
+    expect(isSlugTaken("ramo-rosas", ["gorra-azul"])).toBe(false)
   })
 })

@@ -10,7 +10,8 @@ import type { ProductAvailability } from "@/types/database"
 import type { ActionResult } from "../lib/action-result"
 import { fail, ok } from "../lib/action-result"
 import { isValidAvailability } from "../lib/availability-options"
-import { resolveUniqueSlug } from "../lib/resolve-unique-slug"
+import type { SlugSource } from "../lib/resolve-unique-slug"
+import { resolveSlugOrError } from "../lib/resolve-unique-slug"
 import { revalidatePublicCatalog } from "../lib/revalidate"
 import { slugify } from "../lib/slugify"
 import { withAdmin } from "../lib/with-admin"
@@ -34,6 +35,9 @@ export async function createProduct(
     const categoryId = formData.get("category_id")
     const availabilityInput = formData.get("availability")
     const isFeatured = formData.get("is_featured")
+    const slugSourceInput = formData.get("slugSource")
+    const slugSource: SlugSource =
+      slugSourceInput === "manual" ? "manual" : "auto"
 
     if (typeof name !== "string" || name.trim() === "") {
       return fail<CreateProductData>("El nombre es obligatorio", {
@@ -99,7 +103,31 @@ export async function createProduct(
         ? slugInput
         : name,
     )
-    const slug = await resolveUniqueSlug(admin, "products", base)
+
+    // Defensive fallback: a name made entirely of punctuation (e.g. "!!!")
+    // slugifies to "" — never insert an empty slug when it was auto-derived
+    // and the owner never typed one by hand.
+    if (slugSource === "auto" && base === "") {
+      return fail<CreateProductData>(
+        "El nombre debe incluir al menos una letra o número.",
+        { name: "El nombre debe incluir al menos una letra o número." },
+      )
+    }
+
+    const resolution = await resolveSlugOrError(
+      admin,
+      "products",
+      base,
+      slugSource,
+    )
+
+    if (!resolution.ok) {
+      return fail<CreateProductData>("Ese slug ya está en uso, elige otro.", {
+        slug: "Ese slug ya está en uso, elige otro.",
+      })
+    }
+
+    const slug = resolution.slug
 
     const { data, error } = await admin
       .from("products")

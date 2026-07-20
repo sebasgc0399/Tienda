@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useRef, useState } from "react"
+import { useActionState, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -73,9 +73,23 @@ export function CategoryForm(props: CategoryFormProps) {
   const [slug, setSlug] = useState(isEdit ? props.category.slug : "")
   const [slugTouched, setSlugTouched] = useState(false)
   const [pendingFormData, setPendingFormData] = useState<FormData | null>(null)
-  const formRef = useRef<HTMLFormElement>(null)
 
   const fieldErrors = state?.status === "error" ? state.fieldErrors : undefined
+
+  // Auto-vs-manual for the slug pipeline (admin-panel.md, "Generación de
+  // slug"): create mode is manual once the owner has typed into the slug
+  // field herself (slugTouched); edit mode is manual only once the
+  // (re-slugified) value actually diverges from the slug it was pre-loaded
+  // with — an unchanged slug is a no-op regardless of source, so it is safe
+  // to keep tagging it "auto". Derived directly from render state, no effect
+  // needed.
+  const slugSource: "auto" | "manual" = isEdit
+    ? slugify(slug) !== originalSlug
+      ? "manual"
+      : "auto"
+    : slugTouched
+      ? "manual"
+      : "auto"
 
   function handleNameBlur(event: React.FocusEvent<HTMLInputElement>) {
     if (isEdit || slugTouched) {
@@ -108,7 +122,6 @@ export function CategoryForm(props: CategoryFormProps) {
   return (
     <>
       <form
-        ref={formRef}
         action={formAction}
         onSubmit={handleSubmit}
         className="flex flex-col gap-4"
@@ -119,6 +132,7 @@ export function CategoryForm(props: CategoryFormProps) {
         {isEdit ? (
           <input type="hidden" name="current_slug" value={originalSlug ?? ""} />
         ) : null}
+        <input type="hidden" name="slugSource" value={slugSource} />
 
         <FormAlert state={state} />
 

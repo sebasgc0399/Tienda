@@ -8,7 +8,8 @@ import type { ProductAvailability } from "@/types/database"
 import type { ActionResult } from "../lib/action-result"
 import { fail, ok } from "../lib/action-result"
 import { isValidAvailability } from "../lib/availability-options"
-import { resolveUniqueSlug } from "../lib/resolve-unique-slug"
+import type { SlugSource } from "../lib/resolve-unique-slug"
+import { resolveSlugOrError } from "../lib/resolve-unique-slug"
 import { revalidatePublicCatalog } from "../lib/revalidate"
 import { slugify } from "../lib/slugify"
 import { withAdmin } from "../lib/with-admin"
@@ -31,6 +32,9 @@ export async function updateProduct(
     const availabilityInput = formData.get("availability")
     const isFeatured = formData.get("is_featured")
     const isActive = formData.get("is_active")
+    const slugSourceInput = formData.get("slugSource")
+    const slugSource: SlugSource =
+      slugSourceInput === "manual" ? "manual" : "auto"
 
     if (typeof id !== "string" || id === "") {
       return fail("No se encontró el producto a editar")
@@ -95,12 +99,21 @@ export async function updateProduct(
         ? slugInput
         : name,
     )
-    const slug = await resolveUniqueSlug(
+    const resolution = await resolveSlugOrError(
       admin,
       "products",
       base,
+      slugSource,
       typeof currentSlug === "string" ? currentSlug : undefined,
     )
+
+    if (!resolution.ok) {
+      return fail("Ese slug ya está en uso, elige otro.", {
+        slug: "Ese slug ya está en uso, elige otro.",
+      })
+    }
+
+    const slug = resolution.slug
 
     const { error } = await admin
       .from("products")

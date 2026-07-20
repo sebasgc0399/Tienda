@@ -25,3 +25,18 @@ export function nextAvailableSlug(
 
   return candidate
 }
+
+// Pure collision check for a manually-entered slug (docs/specs/admin-panel.md,
+// "Generación de slug"): unlike nextAvailableSlug's auto-suffix path, a slug
+// the owner typed by hand must never be silently changed — this only answers
+// whether `desired` is already used by a DIFFERENT row. `taken` holds every
+// other slug already in use in the table (same shape nextAvailableSlug
+// expects); `currentSlug` exempts the row being edited from colliding with
+// its own unchanged slug.
+export function isSlugTaken(
+  desired: string,
+  taken: string[],
+  currentSlug?: string,
+): boolean {
+  return desired !== currentSlug && taken.includes(desired)
+}

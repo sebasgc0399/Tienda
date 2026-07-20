@@ -6,7 +6,8 @@ import { createAdminClient } from "@/lib/supabase/admin"
 
 import type { ActionResult } from "../lib/action-result"
 import { fail, ok } from "../lib/action-result"
-import { resolveUniqueSlug } from "../lib/resolve-unique-slug"
+import type { SlugSource } from "../lib/resolve-unique-slug"
+import { resolveSlugOrError } from "../lib/resolve-unique-slug"
 import { revalidatePublicCatalog } from "../lib/revalidate"
 import { slugify } from "../lib/slugify"
 import { withAdmin } from "../lib/with-admin"
@@ -25,6 +26,9 @@ export async function updateCategory(
     const description = formData.get("description")
     const currentSlug = formData.get("current_slug")
     const isActive = formData.get("is_active")
+    const slugSourceInput = formData.get("slugSource")
+    const slugSource: SlugSource =
+      slugSourceInput === "manual" ? "manual" : "auto"
 
     if (typeof id !== "string" || id === "") {
       return fail("No se encontró la categoría a editar")
@@ -43,12 +47,21 @@ export async function updateCategory(
         ? slugInput
         : name,
     )
-    const slug = await resolveUniqueSlug(
+    const resolution = await resolveSlugOrError(
       admin,
       "categories",
       base,
+      slugSource,
       typeof currentSlug === "string" ? currentSlug : undefined,
     )
+
+    if (!resolution.ok) {
+      return fail("Ese slug ya está en uso, elige otro.", {
+        slug: "Ese slug ya está en uso, elige otro.",
+      })
+    }
+
+    const slug = resolution.slug
 
     const { error } = await admin
       .from("categories")
