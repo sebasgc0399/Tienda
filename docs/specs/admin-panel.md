@@ -35,7 +35,7 @@ Permitir a la dueña del negocio (usuaria única, no técnica) gestionar el cat�
 | RF-7 | Reordenar imágenes | Cambiar `display_order` de las imágenes de un producto (drag-and-drop o controles arriba/abajo). |
 | RF-8 | Toggles de estado | Activar/desactivar `is_featured`, `is_active` y cambiar `availability` desde la lista o el detalle del producto. |
 | RF-9 | Orden de presentación | Editar `display_order` de productos y categorías desde la UI (afecta el catálogo público). |
-| RF-10 | Confirmaciones | Toda acción destructiva (eliminar producto, categoría o imagen) pide confirmación explícita. |
+| RF-10 | Confirmaciones | Toda acción destructiva e irreversible (eliminar categoría, eliminar imagen, cambiar un slug ya publicado) pide confirmación explícita. Desactivar un producto no la pide: es el toggle reversible de `is_active` (RF-8), no un borrado. |
 
 ### Generación de slug
 
@@ -58,7 +58,7 @@ Permitir a la dueña del negocio (usuaria única, no técnica) gestionar el cat�
 - **Archivo de imagen inválido o muy pesado**: se valida tipo (`image/jpeg`, `image/png`, `image/webp`) y tamaño máximo antes de subir a Storage. Si falla, se muestra un mensaje claro (ej. "La imagen debe ser JPG, PNG o WEBP y pesar menos de 5 MB") y no se intenta la subida.
 - **Falla de subida a Storage**: si la subida falla a mitad de camino, se informa el error y el producto queda sin esa imagen, sin registro huérfano en `product_images`.
 - **Eliminar categoría con productos asociados**: no se permite el borrado directo (la FK `category_id` lo bloquea). La resolución principal es desactivar la categoría (`is_active = false`), como define `data-model.md`; como alternativa, la UI permite reasignar los productos a otra categoría antes de eliminarla.
-- **Borrado de producto**: es soft-delete (`is_active = false`); el borrado físico no está expuesto en la UI en v1.
+- **Borrado de producto**: es soft-delete (`is_active = false`) mediante el toggle de RF-8 — reversible desde la misma lista, por eso no pide confirmación (ver RF-10). El borrado físico no está expuesto en la UI en v1.
 - **Borrado de imagen**: es hard delete y orquesta dos pasos: eliminar el archivo en Storage y luego la fila en `product_images`, evitando archivos huérfanos o referencias rotas.
 
 ## Touchpoints de datos
