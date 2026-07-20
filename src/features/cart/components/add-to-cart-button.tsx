@@ -57,21 +57,27 @@ export function AddToCartButton({
   }
 
   return (
-    <Button
-      type="button"
-      size="lg"
-      disabled={disabled}
-      aria-label={
-        disabled
-          ? `Añadir ${name} al carrito — no disponible`
-          : `Añadir ${name} al carrito`
-      }
-      onClick={handleClick}
-      className="min-h-11 w-full transition-transform active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
-    >
-      <span aria-live="polite">
+    <>
+      <Button
+        type="button"
+        size="lg"
+        disabled={disabled}
+        aria-label={
+          disabled
+            ? `Añadir ${name} al carrito — no disponible`
+            : `Añadir ${name} al carrito`
+        }
+        onClick={handleClick}
+        className="min-h-11 w-full transition-transform active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
+      >
         {added ? "Añadido ✓" : "Añadir al carrito"}
+      </Button>
+      {/* Live region kept OUTSIDE the button: nested live regions inside a
+          widget with a fixed aria-label announce unreliably across screen
+          readers. */}
+      <span aria-live="polite" className="sr-only">
+        {added ? `${name} añadido al carrito` : ""}
       </span>
-    </Button>
+    </>
   )
 }
