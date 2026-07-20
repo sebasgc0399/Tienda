@@ -43,7 +43,7 @@ export function ProductCard({
           <div className="flex flex-col gap-1">
             <h3
               className={cn(
-                "font-heading line-clamp-2 font-bold",
+                "line-clamp-2 font-medium",
                 large ? "text-xl" : "text-base",
               )}
             >

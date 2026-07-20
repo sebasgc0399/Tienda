@@ -25,7 +25,7 @@ Permitir que cualquier visitante explore el catálogo de productos (ramos, gorra
 
 | ID | Requisito | Detalle |
 |----|-----------|---------|
-| RF-1 | Home con destacados | Sección que lista productos con `is_featured = true`; curaduría manual, sin algoritmo de ventas. Orden determinístico e independiente del `display_order` por categoría (que solo tiene sentido dentro de una categoría): `ORDER BY created_at DESC` (o `updated_at DESC`). El primer producto de ese orden ocupa el slot "grande" del bento (ver `design-system.md`, sección Home). |
+| RF-1 | Home con destacados | Sección que lista productos con `is_featured = true`; curaduría manual, sin algoritmo de ventas. Orden determinístico e independiente del `display_order` por categoría (que solo tiene sentido dentro de una categoría): `ORDER BY created_at DESC` (o `updated_at DESC`). El primer producto de ese orden se muestra en el hero del home; el bento muestra los destacados restantes, con el primero de esos ocupando el slot "grande" (ver `design-system.md`, sección Home). |
 | RF-2 | Mega-menú de categorías | La navegación superior despliega columnas con las categorías activas (patrón Apple). |
 | RF-3 | Listado por categoría | Ruta `/categoria/[slug]`; productos ordenados por `display_order` ascendente. |
 | RF-4 | Detalle de producto | Ruta `/producto/[slug]`; muestra galería, nombre, descripción, precio y disponibilidad. |

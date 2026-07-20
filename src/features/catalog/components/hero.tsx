@@ -26,8 +26,8 @@ export function Hero({ product }: HeroProps) {
           Detalles hechos a mano, pensados para regalar
         </h1>
         <p className="text-muted-foreground text-base">
-          Ramos, gorras y decoraciones armados a mano, uno por uno, para
-          acompañar cada ocasión especial.
+          Cada detalle se arma a mano, pieza por pieza, para acompañar cada
+          ocasión especial.
         </p>
         {product ? (
           <Button

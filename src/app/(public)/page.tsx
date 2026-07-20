@@ -9,7 +9,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero product={featured[0]} />
-      <FeaturedBento products={featured} />
+      <FeaturedBento products={featured.slice(1)} />
       <BrandStory />
     </>
   )

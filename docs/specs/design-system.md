@@ -104,7 +104,7 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 | Sección | Regla |
 |---|---|
 | Hero | Estático, sin carrusel autorotativo; la imagen es clickable hacia el producto que retrata. |
-| Destacados | 4-8 productos curados en un bloque asimétrico tipo "bento" (uno grande + 2-3 menores), no el catálogo completo. |
+| Destacados | 4-8 productos curados (`is_featured`); el primero se muestra en el hero, el bento muestra los restantes en un bloque asimétrico (uno grande + 2-3 menores) — no el catálogo completo, no repite el producto del hero. |
 | Historia de marca | Bloque editorial ("hecho a mano en [ciudad]"). |
 
 ### Footer

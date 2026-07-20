@@ -1,12 +1,20 @@
 "use client"
 
+import { ImageIcon } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
+import { getPublicImageUrl } from "@/lib/supabase/storage-url"
 import { cn } from "@/lib/utils"
 
 import type { CategorySummary } from "../types"
+
+// Beyond this the panel wraps to a second row (existing max-h + scroll on
+// the panel absorbs it) instead of squeezing columns indefinitely — spec
+// assumption is 4-6 active categories (docs/specs/design-system.md, Navegación).
+const MAX_COLUMNS = 6
 
 type CategoryMegaMenuProps = {
   categories: CategorySummary[]
@@ -110,23 +118,51 @@ export function CategoryMegaMenu({
         inert={!open}
         className="border-border bg-popover absolute top-full left-0 max-h-[70vh] w-[min(90vw,40rem)] overflow-y-auto rounded-b-lg border p-4 shadow-lg transition-[opacity,transform] duration-100 ease-out data-[state=closed]:-translate-y-1 data-[state=closed]:opacity-0 data-[state=open]:translate-y-0 data-[state=open]:opacity-100 motion-reduce:transition-none"
       >
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+        <ul
+          className="grid gap-x-6 gap-y-4"
+          style={{
+            gridTemplateColumns: `repeat(${Math.min(categories.length, MAX_COLUMNS)}, minmax(0, 1fr))`,
+          }}
+        >
           {categories.map((category) => {
             const href = `/categoria/${category.slug}`
             const isActive = pathname === href
 
             return (
-              <li key={category.id}>
+              <li key={category.id} className="min-w-0">
                 <Link
                   href={href}
-                  className={cn(
-                    "font-heading focus-visible:ring-ring/50 block rounded-md px-2 py-1.5 text-base font-semibold outline-none focus-visible:ring-3",
-                    isActive
-                      ? "text-primary"
-                      : "text-foreground hover:text-primary",
-                  )}
+                  className="group focus-visible:ring-ring/50 block rounded-md px-2 py-1.5 outline-none focus-visible:ring-3"
                 >
-                  {category.name}
+                  <div className="bg-secondary relative aspect-4/3 max-h-24 w-full overflow-hidden rounded-md">
+                    {category.storage_path ? (
+                      <Image
+                        src={getPublicImageUrl(category.storage_path)}
+                        alt=""
+                        aria-hidden="true"
+                        fill
+                        sizes="160px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <ImageIcon
+                          aria-hidden="true"
+                          className="text-muted-foreground size-6"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className={cn(
+                      "font-heading mt-2 block text-base font-semibold",
+                      isActive
+                        ? "text-primary"
+                        : "text-foreground group-hover:text-primary",
+                    )}
+                  >
+                    {category.name}
+                  </span>
                 </Link>
                 {category.description ? (
                   <p className="text-muted-foreground mt-1 px-2 text-sm">
