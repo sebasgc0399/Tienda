@@ -20,14 +20,17 @@ Tienda es una vitrina e-commerce-lite para un negocio familiar en Colombia que v
 
 ## 2. Estado del proyecto
 
-**Fase actual: scaffold completado.** El repositorio contiene la base documental (ADRs, specs y esta guía) y el esqueleto de código: Next.js 16 con App Router y `src/`, tooling de enforcement (ESLint + Prettier + husky/lint-staged + Vitest), tema visual base (dirección A), esquema SQL versionado con seed de ejemplo, los tres clientes de Supabase y una home mínima de prueba de datos. Las features completas (catálogo, carrito, admin) vienen en pasos siguientes sobre esta base.
+**Fase actual: v1 funcional implementada.** Sobre el scaffold documentado (Next.js 16 con App Router y `src/`, tooling de enforcement con ESLint + Prettier + husky/lint-staged + Vitest, tema visual dirección A, esquema SQL versionado con seed de ejemplo y los cuatro clientes de Supabase) están implementadas las tres features del sitio: catálogo público (home, mega-menú, `/categoria/[slug]`, `/producto/[slug]`, servido con ISR), carrito en `localStorage` con checkout por WhatsApp, y el panel de administración en `/admin/**` (login con Supabase Auth, CRUD de categorías/productos, imágenes con principal/reorden, toggles y orden de presentación). Queda pendiente el deploy en Vercel.
 
 | Elemento | Estado |
 |---|---|
 | Documentación (ADRs + specs + esta guía) | Completa |
 | Scaffold de Next.js | Hecho |
 | Migraciones SQL + seed | SQL versionado en `supabase/`; aplicación por fork pendiente (setup §5) |
-| Diseño visual implementado | Base (tokens + fuentes) implementada; pantallas completas pendientes |
+| Catálogo público (catalog) | Implementado |
+| Carrito + checkout WhatsApp (cart) | Implementado |
+| Panel de administración (admin) | Implementado |
+| Diseño visual implementado | Pantallas públicas y admin implementadas sobre los tokens de dirección A |
 | Deploy en Vercel | Pendiente |
 
 Si los comandos de `package.json` cambian, actualizar la sección 4 (Comandos) en el mismo PR — un `CLAUDE.md` con comandos falsos es peor que uno sin comandos.
