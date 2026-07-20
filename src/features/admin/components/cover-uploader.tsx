@@ -80,6 +80,7 @@ export function CoverUploader({ categoryId, storagePath }: CoverUploaderProps) {
             src={getPublicImageUrl(storagePath)}
             alt=""
             fill
+            priority
             sizes="(min-width: 1024px) 380px, 100vw"
             className="object-cover"
           />
