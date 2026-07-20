@@ -15,7 +15,7 @@ export default async function HomePage() {
     : [[], []]
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-16">
+    <div className="mx-auto w-full max-w-5xl px-6 py-16">
       <h1 className="font-heading text-4xl font-bold text-balance">
         Detalles hechos a mano, pensados para regalar
       </h1>
@@ -37,6 +37,6 @@ export default async function HomePage() {
           <FeaturedStrip products={products} />
         </div>
       </section>
-    </main>
+    </div>
   )
 }
