@@ -1,5 +1,6 @@
 "use client"
 
+import { StarIcon, Trash2Icon } from "lucide-react"
 import Image from "next/image"
 import { useState, useTransition } from "react"
 
@@ -64,23 +65,30 @@ function ImageTile({ image, disableUp, disableDown }: ImageTileProps) {
           src={getPublicImageUrl(image.storage_path)}
           alt={image.alt_text ?? ""}
           fill
-          sizes="(min-width: 768px) 25vw, 50vw"
+          sizes="(min-width: 1024px) 180px, 50vw"
           className="object-cover"
         />
+        {image.is_primary ? (
+          <span className="bg-primary text-primary-foreground pointer-events-none absolute top-1.5 left-1.5 rounded px-1.5 py-0.5 text-xs font-medium">
+            Principal
+          </span>
+        ) : null}
       </div>
 
-      <Button
-        type="button"
-        variant={image.is_primary ? "secondary" : "outline"}
-        size="sm"
-        disabled={pending || image.is_primary}
-        aria-pressed={image.is_primary}
-        onClick={handleSetPrimary}
-      >
-        {image.is_primary ? "Principal" : "Marcar principal"}
-      </Button>
+      <div className="flex items-center justify-between gap-1">
+        {image.is_primary ? null : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            disabled={pending}
+            aria-label="Marcar como principal"
+            onClick={handleSetPrimary}
+          >
+            <StarIcon aria-hidden="true" />
+          </Button>
+        )}
 
-      <div className="flex items-center justify-between gap-2">
         <OrderControls
           id={image.id}
           reorderAction={reorderProductImage}
@@ -94,12 +102,14 @@ function ImageTile({ image, disableUp, disableDown }: ImageTileProps) {
           trigger={
             <Button
               type="button"
-              variant="destructive"
-              size="sm"
+              variant="ghost"
+              size="icon-sm"
+              className="text-destructive hover:text-destructive"
               disabled={pending}
+              aria-label="Eliminar imagen"
             />
           }
-          triggerLabel="Eliminar"
+          triggerLabel={<Trash2Icon aria-hidden="true" />}
           title="Eliminar imagen"
           description="¿Eliminar esta imagen? Esta acción no se puede deshacer."
           actions={
@@ -138,7 +148,7 @@ export function ImageGrid({ images }: ImageGridProps) {
   }
 
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+    <ul className="grid grid-cols-2 gap-3">
       {images.map((image, index) => (
         <ImageTile
           key={image.id}

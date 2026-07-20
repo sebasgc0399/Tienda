@@ -138,8 +138,6 @@ export function ProductForm(props: ProductFormProps) {
         ) : null}
         <input type="hidden" name="slugSource" value={slugSource} />
 
-        <FormAlert state={state} />
-
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="name">Nombre</Label>
           <Input
@@ -164,6 +162,10 @@ export function ProductForm(props: ProductFormProps) {
             }}
             aria-invalid={Boolean(fieldErrors?.slug)}
           />
+          <p className="text-muted-foreground text-xs">
+            Se genera solo a partir del nombre. Cámbialo únicamente si necesitas
+            otra URL.
+          </p>
           <FieldError message={fieldErrors?.slug} />
         </div>
 
@@ -176,24 +178,6 @@ export function ProductForm(props: ProductFormProps) {
             aria-invalid={Boolean(fieldErrors?.description)}
           />
           <FieldError message={fieldErrors?.description} />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="price">Precio</Label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            inputMode="numeric"
-            step={1}
-            min={1}
-            defaultValue={isEdit ? props.product.price : undefined}
-            aria-invalid={Boolean(fieldErrors?.price)}
-          />
-          <p className="text-muted-foreground text-xs">
-            En pesos, sin decimales. Ej: 65000
-          </p>
-          <FieldError message={fieldErrors?.price} />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -221,47 +205,75 @@ export function ProductForm(props: ProductFormProps) {
           <FieldError message={fieldErrors?.category_id} />
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="availability">Disponibilidad</Label>
-          <Select
-            name="availability"
-            items={AVAILABILITY_OPTIONS}
-            defaultValue={isEdit ? props.product.availability : "in_stock"}
-            required
-          >
-            <SelectTrigger id="availability" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {AVAILABILITY_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldError message={fieldErrors?.availability} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="price">Precio</Label>
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              inputMode="numeric"
+              step={1}
+              min={1}
+              defaultValue={isEdit ? props.product.price : undefined}
+              aria-invalid={Boolean(fieldErrors?.price)}
+            />
+            <p className="text-muted-foreground text-xs">
+              En pesos, sin decimales. Ej: 65000
+            </p>
+            <FieldError message={fieldErrors?.price} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="availability">Disponibilidad</Label>
+            <Select
+              name="availability"
+              items={AVAILABILITY_OPTIONS}
+              defaultValue={isEdit ? props.product.availability : "in_stock"}
+              required
+            >
+              <SelectTrigger id="availability" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AVAILABILITY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError message={fieldErrors?.availability} />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <Switch
-            id="is_featured"
-            name="is_featured"
-            defaultChecked={isEdit ? props.product.is_featured : false}
-          />
-          <Label htmlFor="is_featured">Destacado</Label>
-        </div>
+        <div className="flex flex-col gap-3 border-t pt-4">
+          <p className="text-muted-foreground text-xs font-medium">
+            Visibilidad
+          </p>
 
-        {isEdit ? (
           <div className="flex items-center gap-2.5">
             <Switch
-              id="is_active"
-              name="is_active"
-              defaultChecked={props.product.is_active}
+              id="is_featured"
+              name="is_featured"
+              defaultChecked={isEdit ? props.product.is_featured : false}
             />
-            <Label htmlFor="is_active">Activo</Label>
+            <Label htmlFor="is_featured">Destacado</Label>
           </div>
-        ) : null}
+
+          {isEdit ? (
+            <div className="flex items-center gap-2.5">
+              <Switch
+                id="is_active"
+                name="is_active"
+                defaultChecked={props.product.is_active}
+              />
+              <Label htmlFor="is_active">Activo</Label>
+            </div>
+          ) : null}
+        </div>
+
+        <FormAlert state={state} />
 
         <Button type="submit" disabled={pending} className="w-fit">
           {isEdit ? "Guardar" : "Crear producto"}

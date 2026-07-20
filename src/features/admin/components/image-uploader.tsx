@@ -32,7 +32,11 @@ type FileEntry = {
 // InlineToggle's doc comment). After the whole batch settles,
 // router.refresh() re-fetches the RSC image list (ImageGrid's data),
 // picking up whatever the actions' own revalidatePublicCatalog() already
-// marked stale.
+// marked stale — then, still inside that same callback, "done" rows are
+// filtered out of the status list: the new thumbnail already showing up in
+// ImageGrid is the success signal, so a lingering filename list is just
+// noise (design-system.md, "Panel de administración"). Only error rows
+// stay, since those are actionable.
 export function ImageUploader({ productId }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -88,11 +92,18 @@ export function ImageUploader({ productId }: ImageUploaderProps) {
       }
 
       router.refresh()
+      setEntries((prev) => prev.filter((entry) => entry.status === "error"))
     })
   }
 
+  function handleClearErrors() {
+    setEntries((prev) => prev.filter((entry) => entry.status !== "error"))
+  }
+
+  const hasErrors = entries.some((entry) => entry.status === "error")
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex shrink-0 flex-col items-end gap-2">
       <div>
         <Button
           type="button"
@@ -114,13 +125,13 @@ export function ImageUploader({ productId }: ImageUploaderProps) {
       </div>
 
       {entries.length > 0 ? (
-        <ul className="flex flex-col gap-1 text-sm">
+        <ul className="flex w-48 flex-col gap-1 text-sm">
           {entries.map((entry) => (
             <li
               key={entry.id}
-              className="flex items-center justify-between gap-2"
+              className="flex min-w-0 items-center justify-between gap-2"
             >
-              <span className="text-muted-foreground truncate">
+              <span className="text-muted-foreground min-w-0 truncate">
                 {entry.name}
               </span>
               {entry.status === "pending" ? (
@@ -139,6 +150,17 @@ export function ImageUploader({ productId }: ImageUploaderProps) {
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {hasErrors ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          onClick={handleClearErrors}
+        >
+          Limpiar
+        </Button>
       ) : null}
     </div>
   )

@@ -118,10 +118,12 @@ Patrón nuevo — introducido junto con el CRUD de categorías, primera pantalla
 | Elemento | Regla |
 |---|---|
 | Chrome | Barra superior con "Tienda · Admin", navegación Categorías/Productos y "Cerrar sesión"; contenedor central. El panel no hereda el header/footer públicos ni el carrito — es un layout propio, sin componentes del catálogo. |
-| Formularios CRUD | Una columna, etiqueta arriba del campo, primitivas Input/Textarea/Select/Switch. Validación server-side con errores legibles bajo cada campo (`useActionState`); sin librería de formularios (ver fila Form de la tabla de componentes). |
+| Formularios CRUD | Una columna, etiqueta arriba del campo, primitivas Input/Textarea/Select/Switch. Validación server-side con errores legibles bajo cada campo (`useActionState`); sin librería de formularios (ver fila Form de la tabla de componentes). Campos relacionados (ej. Precio + Disponibilidad) pueden compartir fila en `sm+`; flags de visibilidad (Destacado, Activo) se agrupan bajo una etiqueta muda ("Visibilidad") separada por un borde superior. El mensaje de éxito/error (`FormAlert`) se ubica junto al botón de envío, no arriba del formulario — feedback cerca de la acción que lo produjo. Una sola acción primaria (rellena) por formulario. |
 | Listas | Tabla en desktop, tarjetas en mobile; miniatura, toggles inline y controles ▲▼ para `display_order`. |
-| Confirmaciones | Toda acción destructiva usa Dialog; cambiar un slug ya publicado pide confirmación explícita antes de guardar. |
-| Subida de imágenes | Validación de tipo/tamaño antes de subir; una imagen por request; estado por archivo. |
+| Edición de producto | Layout de dos columnas en desktop (`datos` 1fr / `imágenes` 380px), apiladas en mobile; encabezado de página con enlace de vuelta, nombre y badge de estado (Activo/Inactivo). Cada zona es un `Card` con heading real (`CardTitle`, `text-lg`) en vez de un `<h2>` suelto — una sola acción primaria por página (Guardar). |
+| Confirmaciones | Toda acción destructiva usa Dialog; cambiar un slug ya publicado pide confirmación explícita antes de guardar. El disparador de una confirmación puede ser un ícono ghost (ej. eliminar imagen: `Trash2` ghost, rojo solo en el ícono) — el destructivo relleno queda reservado al botón de confirmación dentro del Dialog. |
+| Estados sobre imagen | Un estado (ej. "Principal") se muestra como badge absoluto sobre la miniatura, no como botón deshabilitado — estado ≠ acción. Las acciones disponibles (marcar principal, reordenar, eliminar) son íconos ghost compactos debajo de la imagen. |
+| Subida de imágenes | Validación de tipo/tamaño antes de subir; una imagen por request; estado por archivo. El disparador vive en el encabezado de la zona "Imágenes" (`CardAction`), no debajo de la grilla. La lista de estado, una vez que el lote termina, solo muestra filas pendientes y con error — las filas exitosas se retiran porque la miniatura en la grilla ya comunica el éxito. |
 
 ## Direcciones visuales
 
