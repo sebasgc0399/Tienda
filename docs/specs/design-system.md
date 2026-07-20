@@ -41,8 +41,13 @@ Definir guardrails visuales y de interacción para la tienda: tokens de diseño 
 | Card | Product card del catálogo (imagen, nombre, precio). |
 | Button | Acciones primarias/secundarias (añadir al carrito, pedir por WhatsApp, CRUD admin). |
 | Dialog | Confirmaciones destructivas en el panel admin (ej. eliminar categoría). |
-| Form | Formularios CRUD de productos/categorías, con validación. |
+| Form | Formularios CRUD admin con `<form action>` nativo + `useActionState` y validación server-side (sin react-hook-form). |
 | Sheet | Dos usos en mobile: carrito (panel deslizante lateral) y drawer de navegación de categorías. |
+| Input | Campos de texto de una línea en los formularios CRUD admin (nombre, slug, precio). |
+| Label | Etiqueta asociada a cada campo de formulario, siempre arriba del campo (ver "Panel de administración"). |
+| Textarea | Campos de texto largo en los formularios CRUD admin (descripción de categoría/producto). |
+| Select | Selección de una opción entre varias en el panel admin (ej. categoría destino al reasignar productos, disponibilidad de un producto). |
+| Switch | Toggles inline en listas y formularios admin (`is_active`, `is_featured`). |
 
 ## Patrones de UI
 
@@ -105,6 +110,18 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 ### Footer
 
 3-4 columnas — Información/Políticas, Contacto + WhatsApp, Newsletter, Redes — modeladas sobre el footer real de Clemont. En mobile, cada columna colapsa a un acordeón.
+
+### Panel de administración
+
+Patrón nuevo — introducido junto con el CRUD de categorías, primera pantalla del panel admin (`admin-panel.md`).
+
+| Elemento | Regla |
+|---|---|
+| Chrome | Barra superior con "Tienda · Admin", navegación Categorías/Productos y "Cerrar sesión"; contenedor central. El panel no hereda el header/footer públicos ni el carrito — es un layout propio, sin componentes del catálogo. |
+| Formularios CRUD | Una columna, etiqueta arriba del campo, primitivas Input/Textarea/Select/Switch. Validación server-side con errores legibles bajo cada campo (`useActionState`); sin librería de formularios (ver fila Form de la tabla de componentes). |
+| Listas | Tabla en desktop, tarjetas en mobile; miniatura, toggles inline y controles ▲▼ para `display_order`. |
+| Confirmaciones | Toda acción destructiva usa Dialog; cambiar un slug ya publicado pide confirmación explícita antes de guardar. |
+| Subida de imágenes | Validación de tipo/tamaño antes de subir; una imagen por request; estado por archivo. |
 
 ## Direcciones visuales
 
