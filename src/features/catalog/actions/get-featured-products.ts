@@ -1,32 +1,43 @@
 import "server-only"
 
-import { createClient } from "@/lib/supabase/server"
-import type { Product } from "@/types/database"
+import { createPublicClient, hasSupabaseEnv } from "@/lib/supabase/public"
 
-type FeaturedProduct = Pick<Product, "id" | "slug" | "name" | "price">
+import { pickPrimaryImage } from "../lib/pick-primary-image"
+import type { FeaturedProduct } from "../types"
 
 // Featured ordering rule: created_at DESC (docs/specs/public-catalog.md RF-1).
 export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
-  const supabase = await createClient()
+  if (!hasSupabaseEnv()) {
+    return []
+  }
+
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, slug, name, price, categories!inner(is_active)")
+    .select(
+      `id, slug, name, price, availability,
+       categories!inner(is_active),
+       product_images(storage_path, alt_text, is_primary, display_order)`,
+    )
     .eq("is_featured", true)
     .eq("is_active", true)
     .eq("categories.is_active", true)
     .order("created_at", { ascending: false })
-    .limit(4)
+    .limit(8)
 
   if (error) {
     throw new Error(`Failed to load featured products: ${error.message}`)
   }
 
-  // Pick only the FeaturedProduct fields, dropping the join-only `categories` field.
-  return (data ?? []).map(({ id, slug, name, price }) => ({
-    id,
-    slug,
-    name,
-    price,
+  // RLS already scopes rows to active categories/products; the
+  // categories.is_active filter above is defense-in-depth for the join.
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    price: row.price,
+    availability: row.availability,
+    image: pickPrimaryImage(row.product_images),
   }))
 }

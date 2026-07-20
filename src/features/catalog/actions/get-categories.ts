@@ -1,19 +1,19 @@
 import "server-only"
 
-import { createClient } from "@/lib/supabase/server"
-import type { Category } from "@/types/database"
+import { createPublicClient, hasSupabaseEnv } from "@/lib/supabase/public"
 
-type CategorySummary = Pick<
-  Category,
-  "id" | "slug" | "name" | "description" | "display_order"
->
+import type { CategorySummary } from "../types"
 
 export async function getCategories(): Promise<CategorySummary[]> {
-  const supabase = await createClient()
+  if (!hasSupabaseEnv()) {
+    return []
+  }
+
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from("categories")
-    .select("id, slug, name, description, display_order")
+    .select("id, slug, name, description, display_order, storage_path")
     .eq("is_active", true)
     .order("display_order", { ascending: true })
 
