@@ -116,7 +116,9 @@ export function CartSheet() {
   // always start from an empty cart, so there is nothing to gate there.
   const showBadge = hydrated && totalQuantity > 0
   const triggerLabel =
-    totalQuantity > 0 ? `Carrito, ${totalQuantity} productos` : "Carrito"
+    totalQuantity > 0
+      ? `Carrito, ${totalQuantity} ${totalQuantity === 1 ? "producto" : "productos"}`
+      : "Carrito"
 
   return (
     <Sheet>

@@ -22,18 +22,38 @@ type CartItemRowProps = {
 // entre añadir y checkout"); the other two are informational only.
 const BLOCKING_STATUSES = new Set<ReconcileStatus>(["out_of_stock", "removed"])
 
-const FLAG_COPY: Record<Exclude<ReconcileStatus, "unchanged">, string> = {
+const FLAG_COPY: Record<
+  Exclude<ReconcileStatus, "unchanged" | "availability_changed">,
+  string
+> = {
   price_changed: "Precio actualizado",
   out_of_stock: "Agotado",
-  availability_changed: "Ahora es sobre pedido",
   removed: "Ya no está disponible",
+}
+
+// "availability_changed" fires for BOTH directions (in_stock -> made_to_order
+// and back), so its copy must depend on the item's FRESH availability
+// instead of assuming one direction. `item` here is already the reconciled
+// row when an outcome exists (see cart-sheet.tsx), so item.availability is
+// up to date. out_of_stock never reaches this map: reconcileCart reports
+// that case as its own "out_of_stock" status before it ever checks for an
+// availability change.
+const AVAILABILITY_FLAG_COPY: Partial<
+  Record<CartItem["availability"], string>
+> = {
+  made_to_order: "Ahora es sobre pedido",
+  in_stock: "Ya está disponible",
 }
 
 export function CartItemRow({ item, outcome }: CartItemRowProps) {
   const { remove, setQuantity } = useCart()
 
   const flag =
-    outcome && outcome.status !== "unchanged" ? FLAG_COPY[outcome.status] : null
+    !outcome || outcome.status === "unchanged"
+      ? null
+      : outcome.status === "availability_changed"
+        ? (AVAILABILITY_FLAG_COPY[item.availability] ?? null)
+        : FLAG_COPY[outcome.status]
   const isBlocking = outcome ? BLOCKING_STATUSES.has(outcome.status) : false
 
   return (

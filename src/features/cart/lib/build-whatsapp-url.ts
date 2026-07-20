@@ -1,44 +1,34 @@
-import type { MessageLineItem } from "./build-whatsapp-message"
-import { formatCop } from "./format-cop"
+import {
+  buildWhatsappMessage,
+  type MessageLineItem,
+} from "./build-whatsapp-message"
 import { truncateGraphemes } from "./truncate-graphemes"
 
 // Adopted safe threshold for the full wa.me URL — docs/specs/
 // cart-whatsapp-checkout.md "Longitud máxima de la URL wa.me".
 export const WA_URL_MAX_LENGTH = 2000
 
-function itemLine(item: MessageLineItem, index: number): string {
-  const subtotal = item.quantity * item.price
-
-  return `${index + 1}. ${item.name} x${item.quantity} - ${formatCop(item.price)} c/u = ${formatCop(subtotal)}`
-}
-
 // `allItems` is always the full cart (used for the total and the hidden
 // count); `visibleItems` is the prefix actually rendered as numbered lines.
 // The total is NEVER computed over `visibleItems` — the spec requires it to
-// always reflect the whole cart, even when items are hidden.
+// always reflect the whole cart, even when items are hidden. Delegates the
+// actual line/total layout to buildWhatsappMessage so the contractual
+// format (docs/specs/cart-whatsapp-checkout.md "Formato del mensaje") lives
+// in exactly one module.
 function buildMessage(
   allItems: MessageLineItem[],
   visibleItems: MessageLineItem[],
 ): string {
   const hiddenCount = allItems.length - visibleItems.length
-  const lines = visibleItems.map(itemLine)
-
-  if (hiddenCount > 0) {
-    lines.push(`y ${hiddenCount} productos más`)
-  }
-
   const total = allItems.reduce(
     (sum, item) => sum + item.quantity * item.price,
     0,
   )
 
-  return [
-    "Hola, quiero hacer este pedido:",
-    "",
-    ...lines,
-    "",
-    `Total: ${formatCop(total)}`,
-  ].join("\n")
+  return buildWhatsappMessage(visibleItems, {
+    total,
+    extraLine: hiddenCount > 0 ? `y ${hiddenCount} productos más` : undefined,
+  })
 }
 
 function buildUrl(number: string, message: string): string {
@@ -90,11 +80,17 @@ function buildUrlWithTruncatedFirstName(
   )
 }
 
-// Builds the wa.me URL, never over WA_URL_MAX_LENGTH and never throwing
-// URIError. If the full message fits, uses it as-is. Otherwise drops
-// trailing item lines one at a time (never the total, which always covers
-// the whole cart) until it fits, appending "y N productos más". If even a
-// single item doesn't fit, falls back to truncating that item's name.
+// Builds the wa.me URL, staying within WA_URL_MAX_LENGTH for all realistic
+// inputs and never throwing URIError. If the full message fits, uses it
+// as-is. Otherwise drops trailing item lines one at a time (never the
+// total, which always covers the whole cart) until it fits, appending "y N
+// productos más". If even a single item doesn't fit, falls back to
+// truncating that item's name toward "…" via
+// buildUrlWithTruncatedFirstName. That fallback has a theoretical floor:
+// if the URL is still over the cap even with the name reduced to the
+// single character "…" (e.g. a pathologically long phone number), the
+// returned URL can exceed WA_URL_MAX_LENGTH — there is no further
+// fallback beyond that point.
 export function buildWhatsappUrl(
   number: string,
   items: MessageLineItem[],
