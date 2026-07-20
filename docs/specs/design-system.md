@@ -62,6 +62,7 @@ El componente Navigation Menu de shadcn (RF-5) se mantiene, pero su densidad se 
 | Apertura (hover) | Delay de apertura 0.5s, revelado en 0.1s, delay de cierre 0.5s (NN/g, *Timing Guidelines for Exposing Hidden Content*). |
 | Header de categoría | Clickable en sí mismo, no solo sus hijos. |
 | Estado activo | La categoría actual se resalta en su header. |
+| Portada por columna | Cada columna muestra la portada de su categoría como miniatura (`object-contain` fundida sobre el fondo cálido de la tile con `mix-blend-multiply`, para que las fotos de estudio con fondo blanco no rompan la paleta); sin portada, placeholder neutro. La columna completa (portada + nombre) es un solo link. |
 | Mobile | Lista plana de categorías dentro del `Sheet` (sin acordeones anidados); iconos de carrito y WhatsApp permanecen fuera del drawer, visibles en el header. |
 
 ### Product card
@@ -80,7 +81,7 @@ Patrón nuevo — no estaba cubierto en la versión anterior de esta spec.
 
 | Zona | Regla |
 |---|---|
-| Galería (desktop) | Master-detail (referencia Clemont): riel vertical de miniaturas a la izquierda, `position: sticky` bajo el header, con `max-height` acotado y scroll interno propio — todas las miniaturas son alcanzables sin hacer crecer la página. A la derecha, una única imagen principal grande que cambia al seleccionar una miniatura (sin scroll por todas las fotos). La miniatura activa se marca con un borde de acento. Cambio instantáneo entre fotos, sin librería de animación (ADR-0007). |
+| Galería (desktop) | Master-detail (referencia Clemont): riel vertical de miniaturas a la izquierda, `position: sticky` bajo el header, con `max-height` acotado y scroll interno propio — todas las miniaturas son alcanzables sin hacer crecer la página. A la derecha, una única imagen principal grande que cambia al seleccionar una miniatura (sin scroll por todas las fotos). La miniatura activa se marca con un borde de acento. El cambio entre fotos usa una transición corta de opacidad (todas las imágenes montadas, sin recarga ni flash), CSS puro sin librería de animación y respetando `prefers-reduced-motion` (ADR-0007). |
 | Galería (mobile) | Imagen principal a ancho completo primero, seguida de una tira horizontal de miniaturas con scroll propio. Misma miniatura activa con borde de acento que en desktop. |
 | Buy-box (desktop) | `position: sticky` a la derecha — nombre, precio, CTA "Añadir al carrito" (RF-6 de [public-catalog.md](./public-catalog.md)). |
 | Buy-bar (mobile) | Fija; precio + CTA "Añadir al carrito". Aparece vía `IntersectionObserver` cuando el CTA principal sale de la vista, re-exponiendo esa misma acción. "Pedir por WhatsApp" es una acción del carrito (RF-7 de [cart-whatsapp-checkout.md](./cart-whatsapp-checkout.md)), no del PDP. |

@@ -24,7 +24,7 @@ export function FeaturedBento({ products }: FeaturedBentoProps) {
       <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {hero ? (
           <div className="col-span-2 row-span-2">
-            <ProductCard product={hero} large priority />
+            <ProductCard product={hero} large />
           </div>
         ) : null}
         {rest.map((product) => (
