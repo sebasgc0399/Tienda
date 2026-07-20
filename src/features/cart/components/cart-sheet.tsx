@@ -1,6 +1,7 @@
 "use client"
 
 import { ShoppingBag } from "lucide-react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,11 +14,102 @@ import {
 } from "@/components/ui/sheet"
 import { formatCurrency } from "@/lib/format-currency"
 
+import { cartTotal } from "../lib/cart-operations"
+import type { CartItem } from "../lib/cart-types"
+import { reconcileCart, type ReconcileOutcome } from "../lib/reconcile-cart"
+import { fetchFreshRows } from "../lib/revalidate-cart"
 import { CartItemRow } from "./cart-item-row"
 import { useCart } from "./cart-provider"
+import { CheckoutControl, type CheckoutPhase } from "./checkout-control"
+
+// Pre-checkout revalidation state (docs/specs/cart-whatsapp-checkout.md,
+// "Producto no disponible entre añadir y checkout"; plan decision
+// "Revalidación pre-checkout"). Lives here, not in CheckoutControl, because
+// both the footer control AND the item rows need the same outcomes/
+// reconciled data — CheckoutControl stays presentational.
+type CheckoutState = {
+  phase: CheckoutPhase
+  outcomes: ReconcileOutcome[] | null
+  reconciled: CartItem[] | null
+  hasBlocking: boolean
+  reconciledFor: CartItem[] | null
+}
+
+const IDLE_CHECKOUT: CheckoutState = {
+  phase: "idle",
+  outcomes: null,
+  reconciled: null,
+  hasBlocking: false,
+  reconciledFor: null,
+}
 
 export function CartSheet() {
-  const { items, hydrated, totalQuantity, total } = useCart()
+  const { items, hydrated, totalQuantity } = useCart()
+  const [checkout, setCheckout] = useState<CheckoutState>(IDLE_CHECKOUT)
+
+  // Anti-stale guard, as pure derivation — no effect (react-hooks v7
+  // hard-errors on setState-in-effect; see cart-provider.tsx for why this
+  // codebase already avoids that pattern). `items` gets a fresh array
+  // reference on every cart mutation (add/remove/setQuantity), so comparing
+  // it against the reference a result was computed for is enough to detect
+  // staleness: once it no longer matches, the result silently falls back to
+  // idle without any extra bookkeeping or synchronization.
+  const isCurrent = checkout.reconciledFor === items
+  const phase: CheckoutPhase = isCurrent ? checkout.phase : "idle"
+  const outcomes = isCurrent ? checkout.outcomes : null
+  const reconciled = isCurrent ? checkout.reconciled : null
+  const hasBlocking = isCurrent ? checkout.hasBlocking : false
+
+  const reconciledByProductId = new Map(
+    (reconciled ?? []).map((reconciledItem) => [
+      reconciledItem.productId,
+      reconciledItem,
+    ]),
+  )
+  // Rows and the footer total both read through this map so they always
+  // agree with each other: once revalidation has fresh data for an item,
+  // its displayed price switches from the localStorage snapshot to the DB
+  // price everywhere at once, matching the amount the WhatsApp message
+  // will use once the control reaches the ready phase.
+  const displayItems = items.map(
+    (item) => reconciledByProductId.get(item.productId) ?? item,
+  )
+  const displayTotal = cartTotal(displayItems)
+
+  async function handleCheckout() {
+    const itemsAtStart = items
+
+    setCheckout({
+      phase: "revalidating",
+      outcomes: null,
+      reconciled: null,
+      hasBlocking: false,
+      reconciledFor: itemsAtStart,
+    })
+
+    try {
+      const rows = await fetchFreshRows(
+        itemsAtStart.map((item) => item.productId),
+      )
+      const result = reconcileCart(itemsAtStart, rows)
+
+      setCheckout({
+        phase: result.hasBlocking ? "idle" : "ready",
+        outcomes: result.outcomes,
+        reconciled: result.reconciled,
+        hasBlocking: result.hasBlocking,
+        reconciledFor: itemsAtStart,
+      })
+    } catch {
+      setCheckout({
+        phase: "error",
+        outcomes: null,
+        reconciled: null,
+        hasBlocking: false,
+        reconciledFor: itemsAtStart,
+      })
+    }
+  }
 
   // The badge (and the count in the trigger's aria-label) only reflects the
   // real cart after hydration — the server render and first client render
@@ -60,7 +152,13 @@ export function CartSheet() {
         ) : (
           <ul className="flex-1 divide-y overflow-y-auto px-4">
             {items.map((item) => (
-              <CartItemRow key={item.productId} item={item} />
+              <CartItemRow
+                key={item.productId}
+                item={reconciledByProductId.get(item.productId) ?? item}
+                outcome={outcomes?.find(
+                  (outcome) => outcome.productId === item.productId,
+                )}
+              />
             ))}
           </ul>
         )}
@@ -69,8 +167,16 @@ export function CartSheet() {
           <SheetFooter>
             <div className="flex items-center justify-between">
               <span className="font-medium">Total</span>
-              <span className="font-medium">{formatCurrency(total)}</span>
+              <span className="font-medium">
+                {formatCurrency(displayTotal)}
+              </span>
             </div>
+            <CheckoutControl
+              phase={phase}
+              hasBlocking={hasBlocking}
+              reconciled={reconciled}
+              onCheckout={handleCheckout}
+            />
           </SheetFooter>
         ) : null}
       </SheetContent>
