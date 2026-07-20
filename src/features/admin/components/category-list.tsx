@@ -41,6 +41,49 @@ function CategoryThumb({ storagePath }: { storagePath: string | null }) {
   )
 }
 
+function CategoryNameLink({ category }: { category: AdminCategoryRow }) {
+  return (
+    <Link
+      href={`/admin/categorias/${category.id}`}
+      className="focus-visible:ring-ring/50 block w-fit rounded-md font-medium outline-none hover:underline focus-visible:ring-3"
+    >
+      {category.name}
+    </Link>
+  )
+}
+
+// Actions column: "Editar" plus the (visually demoted, see
+// CategoryDeleteDialog) "Eliminar" trigger. Unlike products, category
+// deletion is not redundant with the Activa Switch — it runs a
+// reassign-then-delete flow the Switch cannot express — so it stays here,
+// just demoted from filled destructive to a ghost icon (finding A, admin UX
+// audit session 2/3).
+function CategoryRowActions({
+  category,
+  otherCategories,
+}: {
+  category: AdminCategoryRow
+  otherCategories: AdminCategoryRow[]
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        render={<Link href={`/admin/categorias/${category.id}`} />}
+        nativeButton={false}
+      >
+        Editar
+      </Button>
+      <CategoryDeleteDialog
+        category={category}
+        productCount={category.product_count}
+        otherCategories={otherCategories}
+      />
+    </div>
+  )
+}
+
 // Server-fed presentational list (RF-3, admin-panel.md): desktop table /
 // mobile cards (design-system.md, "Panel de administración"). Interactivity
 // lives entirely in the leaf client components (InlineToggle,
@@ -76,7 +119,7 @@ export function CategoryList({ categories }: CategoryListProps) {
                 <CategoryThumb storagePath={category.storage_path} />
               </td>
               <td className="py-3 pr-4">
-                <div className="font-medium">{category.name}</div>
+                <CategoryNameLink category={category} />
                 <div className="text-muted-foreground text-xs">
                   {category.slug}
                 </div>
@@ -99,23 +142,12 @@ export function CategoryList({ categories }: CategoryListProps) {
                 />
               </td>
               <td className="py-3 pr-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    render={<Link href={`/admin/categorias/${category.id}`} />}
-                    nativeButton={false}
-                  >
-                    Editar
-                  </Button>
-                  <CategoryDeleteDialog
-                    category={category}
-                    productCount={category.product_count}
-                    otherCategories={categories.filter(
-                      (other) => other.id !== category.id,
-                    )}
-                  />
-                </div>
+                <CategoryRowActions
+                  category={category}
+                  otherCategories={categories.filter(
+                    (other) => other.id !== category.id,
+                  )}
+                />
               </td>
             </tr>
           ))}
@@ -128,7 +160,7 @@ export function CategoryList({ categories }: CategoryListProps) {
             <div className="flex items-start gap-3">
               <CategoryThumb storagePath={category.storage_path} />
               <div className="min-w-0 flex-1">
-                <div className="font-medium">{category.name}</div>
+                <CategoryNameLink category={category} />
                 <div className="text-muted-foreground text-xs">
                   {category.slug}
                 </div>
@@ -136,12 +168,22 @@ export function CategoryList({ categories }: CategoryListProps) {
                   {category.product_count} producto(s)
                 </div>
               </div>
-              <InlineToggle
-                id={category.id}
-                checked={category.is_active}
-                action={toggleCategoryActive}
-                label={`Activa: ${category.name}`}
-              />
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <InlineToggle
+                  id={category.id}
+                  checked={category.is_active}
+                  action={toggleCategoryActive}
+                  label={`Activa: ${category.name}`}
+                />
+                <span
+                  aria-hidden="true"
+                  className="text-muted-foreground text-xs"
+                >
+                  Activa
+                </span>
+              </div>
             </div>
             <div className="mt-3 flex items-center justify-between gap-2">
               <OrderControls
@@ -150,23 +192,12 @@ export function CategoryList({ categories }: CategoryListProps) {
                 disableUp={index === 0}
                 disableDown={index === categories.length - 1}
               />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  render={<Link href={`/admin/categorias/${category.id}`} />}
-                  nativeButton={false}
-                >
-                  Editar
-                </Button>
-                <CategoryDeleteDialog
-                  category={category}
-                  productCount={category.product_count}
-                  otherCategories={categories.filter(
-                    (other) => other.id !== category.id,
-                  )}
-                />
-              </div>
+              <CategoryRowActions
+                category={category}
+                otherCategories={categories.filter(
+                  (other) => other.id !== category.id,
+                )}
+              />
             </div>
           </li>
         ))}

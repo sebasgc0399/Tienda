@@ -1,5 +1,6 @@
 "use client"
 
+import { Trash2Icon } from "lucide-react"
 import { useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -91,8 +92,16 @@ export function CategoryDeleteDialog({
     <DeleteDialog
       open={open}
       onOpenChange={setOpen}
-      trigger={<Button variant="destructive" size="sm" />}
-      triggerLabel="Eliminar"
+      trigger={
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="text-destructive hover:text-destructive"
+          aria-label={`Eliminar ${category.name}`}
+        />
+      }
+      triggerLabel={<Trash2Icon aria-hidden="true" />}
       title={`Eliminar "${category.name}"`}
       description={
         productCount > 0

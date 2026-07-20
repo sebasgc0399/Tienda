@@ -134,8 +134,6 @@ export function CategoryForm(props: CategoryFormProps) {
         ) : null}
         <input type="hidden" name="slugSource" value={slugSource} />
 
-        <FormAlert state={state} />
-
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="name">Nombre</Label>
           <Input
@@ -160,6 +158,10 @@ export function CategoryForm(props: CategoryFormProps) {
             }}
             aria-invalid={Boolean(fieldErrors?.slug)}
           />
+          <p className="text-muted-foreground text-xs">
+            Se genera solo a partir del nombre. Cámbialo únicamente si necesitas
+            otra URL.
+          </p>
           <FieldError message={fieldErrors?.slug} />
         </div>
 
@@ -183,6 +185,8 @@ export function CategoryForm(props: CategoryFormProps) {
             <Label htmlFor="is_active">Activa</Label>
           </div>
         ) : null}
+
+        <FormAlert state={state} />
 
         <Button type="submit" disabled={pending} className="w-fit">
           {isEdit ? "Guardar" : "Crear categoría"}

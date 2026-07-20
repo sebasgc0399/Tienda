@@ -1,6 +1,6 @@
 "use client"
 
-import { ImageIcon } from "lucide-react"
+import { ImageIcon, Trash2Icon } from "lucide-react"
 import Image from "next/image"
 import { useRef, useState, useTransition } from "react"
 
@@ -74,13 +74,13 @@ export function CoverUploader({ categoryId, storagePath }: CoverUploaderProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="bg-secondary relative flex aspect-square w-32 items-center justify-center overflow-hidden rounded-lg">
+      <div className="bg-secondary relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md">
         {storagePath ? (
           <Image
             src={getPublicImageUrl(storagePath)}
             alt=""
             fill
-            sizes="128px"
+            sizes="(min-width: 1024px) 380px, 100vw"
             className="object-cover"
           />
         ) : (
@@ -116,12 +116,17 @@ export function CoverUploader({ categoryId, storagePath }: CoverUploaderProps) {
             trigger={
               <Button
                 type="button"
-                variant="destructive"
+                variant="ghost"
                 size="sm"
                 disabled={pending}
               />
             }
-            triggerLabel="Quitar portada"
+            triggerLabel={
+              <>
+                <Trash2Icon aria-hidden="true" className="text-destructive" />
+                Quitar portada
+              </>
+            }
             title="Quitar portada"
             description="La categoría se queda sin imagen de portada. Puedes subir otra cuando quieras."
             actions={
