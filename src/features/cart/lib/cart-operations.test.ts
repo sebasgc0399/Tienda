@@ -16,6 +16,7 @@ const jabonSnapshot: Omit<CartItem, "quantity"> = {
   name: "Ramo Jabones Clásico",
   price: 45000,
   availability: "in_stock",
+  image: { storage_path: "products/jabon-1.jpg", alt_text: "Ramo de jabones" },
 }
 
 const gorraSnapshot: Omit<CartItem, "quantity"> = {
@@ -24,6 +25,7 @@ const gorraSnapshot: Omit<CartItem, "quantity"> = {
   name: "Gorra Bordada",
   price: 35000,
   availability: "in_stock",
+  image: null,
 }
 
 describe("addItem", () => {
@@ -61,6 +63,18 @@ describe("addItem", () => {
 
     expect(result).not.toBe(cart)
     expect(cart).toHaveLength(1)
+  })
+
+  it("keeps the existing item's image when the same product is added again", () => {
+    const cart = [{ ...jabonSnapshot, quantity: 1 }]
+    const staleSnapshot = {
+      ...jabonSnapshot,
+      image: { storage_path: "products/stale.jpg", alt_text: null },
+    }
+
+    const result = addItem(cart, staleSnapshot)
+
+    expect(result[0].image).toEqual(jabonSnapshot.image)
   })
 })
 

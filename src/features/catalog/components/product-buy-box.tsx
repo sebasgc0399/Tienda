@@ -2,6 +2,7 @@ import { AddToCartButton } from "@/features/cart/components/add-to-cart-button"
 import { formatCurrency } from "@/lib/format-currency"
 import type { ProductAvailability } from "@/types/database"
 
+import type { ProductImageRef } from "../types"
 import { AvailabilityBadge } from "./availability-badge"
 
 type ProductBuyBoxProps = {
@@ -11,6 +12,7 @@ type ProductBuyBoxProps = {
   price: number
   availability: ProductAvailability
   description: string
+  image: ProductImageRef | null
 }
 
 // Content-only: the caller positions the sticky wrapper
@@ -23,6 +25,7 @@ export function ProductBuyBox({
   price,
   availability,
   description,
+  image,
 }: ProductBuyBoxProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -35,6 +38,7 @@ export function ProductBuyBox({
         name={name}
         price={price}
         availability={availability}
+        image={image}
       />
       <p className="text-muted-foreground whitespace-pre-line">{description}</p>
     </div>

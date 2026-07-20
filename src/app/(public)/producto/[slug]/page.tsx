@@ -66,6 +66,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound()
   }
 
+  const primaryImage = pickPrimaryImage(product.images)
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
       <Link
@@ -87,6 +89,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             name={product.name}
             price={product.price}
             availability={product.availability}
+            image={primaryImage}
           >
             <ProductBuyBox
               id={product.id}
@@ -95,6 +98,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               price={product.price}
               availability={product.availability}
               description={product.description}
+              image={primaryImage}
             />
           </MobileBuyBar>
         </div>

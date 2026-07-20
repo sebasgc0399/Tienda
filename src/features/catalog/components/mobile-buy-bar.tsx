@@ -7,12 +7,15 @@ import { formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 import type { ProductAvailability } from "@/types/database"
 
+import type { ProductImageRef } from "../types"
+
 type MobileBuyBarProps = {
   id: string
   slug: string
   name: string
   price: number
   availability: ProductAvailability
+  image: ProductImageRef | null
   children: React.ReactNode
 }
 
@@ -28,6 +31,7 @@ export function MobileBuyBar({
   name,
   price,
   availability,
+  image,
   children,
 }: MobileBuyBarProps) {
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -70,6 +74,7 @@ export function MobileBuyBar({
               name={name}
               price={price}
               availability={availability}
+              image={image}
             />
           </div>
         </div>

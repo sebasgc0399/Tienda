@@ -3,6 +3,7 @@
 import { Minus, Plus, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { ProductImage } from "@/features/catalog/components/product-image"
 import { formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
@@ -37,6 +38,10 @@ export function CartItemRow({ item, outcome }: CartItemRowProps) {
 
   return (
     <li className="flex items-start gap-3 py-3">
+      <div className="size-16 shrink-0">
+        <ProductImage image={item.image} name={item.name} sizes="64px" />
+      </div>
+
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 font-medium">{item.name}</p>
         <p className="text-muted-foreground text-sm">
@@ -53,43 +58,44 @@ export function CartItemRow({ item, outcome }: CartItemRowProps) {
           </p>
         ) : null}
 
-        <div className="mt-2 flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-11"
-            aria-label="Reducir cantidad"
-            disabled={item.quantity === 1}
-            onClick={() => setQuantity(item.productId, item.quantity - 1)}
-          >
-            <Minus aria-hidden="true" />
-          </Button>
-          <span aria-live="polite" className="w-6 text-center text-sm">
-            {item.quantity}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-11"
-            aria-label="Aumentar cantidad"
-            onClick={() => setQuantity(item.productId, item.quantity + 1)}
-          >
-            <Plus aria-hidden="true" />
-          </Button>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-11"
+              aria-label="Reducir cantidad"
+              disabled={item.quantity === 1}
+              onClick={() => setQuantity(item.productId, item.quantity - 1)}
+            >
+              <Minus aria-hidden="true" />
+            </Button>
+            <span aria-live="polite" className="w-6 text-center text-sm">
+              {item.quantity}
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-11"
+              aria-label="Aumentar cantidad"
+              onClick={() => setQuantity(item.productId, item.quantity + 1)}
+            >
+              <Plus aria-hidden="true" />
+            </Button>
+          </div>
+          <p className="font-medium">{formatCurrency(itemSubtotal(item))}</p>
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-2">
-        <p className="font-medium">{formatCurrency(itemSubtotal(item))}</p>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Quitar ${item.name} del carrito`}
-          onClick={() => remove(item.productId)}
-        >
-          <Trash2 aria-hidden="true" />
-        </Button>
-      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={`Quitar ${item.name} del carrito`}
+        onClick={() => remove(item.productId)}
+        className="shrink-0"
+      >
+        <Trash2 aria-hidden="true" />
+      </Button>
     </li>
   )
 }

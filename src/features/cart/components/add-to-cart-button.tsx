@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { isPurchasable } from "@/features/catalog/lib/availability"
+import type { ProductImageRef } from "@/features/catalog/types"
 import type { ProductAvailability } from "@/types/database"
 
 import { useCart } from "./cart-provider"
@@ -12,6 +13,7 @@ type AddToCartButtonProps = {
   name: string
   price: number
   availability: ProductAvailability
+  image: ProductImageRef | null
 }
 
 // Feedback stays purely tactile (press scale) on purpose: a success-style
@@ -24,6 +26,7 @@ export function AddToCartButton({
   name,
   price,
   availability,
+  image,
 }: AddToCartButtonProps) {
   const { add } = useCart()
   const disabled = !isPurchasable(availability)
@@ -38,7 +41,7 @@ export function AddToCartButton({
           ? `Añadir ${name} al carrito — no disponible`
           : `Añadir ${name} al carrito`
       }
-      onClick={() => add({ productId, slug, name, price, availability })}
+      onClick={() => add({ productId, slug, name, price, availability, image })}
       className="min-h-11 w-full transition-transform active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
     >
       Añadir al carrito

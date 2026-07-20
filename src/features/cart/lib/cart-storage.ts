@@ -18,6 +18,32 @@ const AVAILABILITY_VALUES = new Set([
   "made_to_order",
 ])
 
+// A missing/undefined `image` (legacy carts saved before this field
+// existed) normalizes to null. A malformed image object (e.g. a
+// non-string storage_path) also normalizes to null rather than rejecting
+// the whole item — the thumbnail is decorative, not worth losing an
+// otherwise-valid cart row over.
+function normalizeImage(value: unknown): CartItem["image"] {
+  if (value === undefined || value === null) {
+    return null
+  }
+
+  if (typeof value !== "object") {
+    return null
+  }
+
+  const image = value as Record<string, unknown>
+
+  if (
+    typeof image.storage_path === "string" &&
+    (image.alt_text === null || typeof image.alt_text === "string")
+  ) {
+    return { storage_path: image.storage_path, alt_text: image.alt_text }
+  }
+
+  return null
+}
+
 function isValidItem(value: unknown): value is CartItem {
   if (typeof value !== "object" || value === null) {
     return false
@@ -72,7 +98,10 @@ export function loadCart(storage: StorageLike): CartItem[] {
     return []
   }
 
-  return envelope.items.filter(isValidItem)
+  return envelope.items.filter(isValidItem).map((item) => ({
+    ...item,
+    image: normalizeImage((item as Record<string, unknown>).image),
+  }))
 }
 
 export function saveCart(storage: StorageLike, items: CartItem[]): void {

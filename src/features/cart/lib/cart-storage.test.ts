@@ -30,6 +30,7 @@ const item: CartItem = {
   price: 45000,
   availability: "in_stock",
   quantity: 2,
+  image: { storage_path: "products/ramo-1.jpg", alt_text: "Ramo de jabones" },
 }
 
 describe("saveCart / loadCart round trip", () => {
@@ -119,5 +120,36 @@ describe("loadCart edge cases", () => {
     )
 
     expect(loadCart(storage)).toEqual([item])
+  })
+
+  it("loads a legacy item without an image field as image: null", () => {
+    const storage = createMemoryStorage()
+    const legacyItem: Record<string, unknown> = { ...item }
+    delete legacyItem.image
+
+    storage.setItem(
+      CART_STORAGE_KEY,
+      JSON.stringify({
+        version: CART_STORAGE_VERSION,
+        items: [legacyItem],
+      }),
+    )
+
+    expect(loadCart(storage)).toEqual([{ ...legacyItem, image: null }])
+  })
+
+  it("normalizes a malformed image to null but keeps the item", () => {
+    const storage = createMemoryStorage()
+    const malformedImageItem = { ...item, image: { storage_path: 123 } }
+
+    storage.setItem(
+      CART_STORAGE_KEY,
+      JSON.stringify({
+        version: CART_STORAGE_VERSION,
+        items: [malformedImageItem],
+      }),
+    )
+
+    expect(loadCart(storage)).toEqual([{ ...item, image: null }])
   })
 })

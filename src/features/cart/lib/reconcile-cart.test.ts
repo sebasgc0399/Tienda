@@ -12,6 +12,7 @@ function makeItem(overrides: Partial<CartItem> = {}): CartItem {
     price: 45000,
     availability: "in_stock",
     quantity: 1,
+    image: null,
     ...overrides,
   }
 }
