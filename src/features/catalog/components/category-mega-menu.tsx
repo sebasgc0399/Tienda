@@ -142,7 +142,7 @@ export function CategoryMegaMenu({
                         aria-hidden="true"
                         fill
                         sizes="160px"
-                        className="object-cover"
+                        className="object-contain p-2 mix-blend-multiply"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
