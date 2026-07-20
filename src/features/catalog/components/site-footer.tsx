@@ -5,23 +5,33 @@ type FooterColumnProps = {
   children: React.ReactNode
 }
 
-// Mobile: native <details>/<summary>, zero JS. From md up, forced open via
-// Tailwind's group-open variant (md:flex always wins over the hidden
-// default, regardless of the [open] attribute) — design-system.md, Footer.
+// Content renders twice on purpose: closed <details> content is hidden via
+// UA content-visibility in modern Chrome, so a CSS "force open" trick on the
+// <details> itself no longer reveals it at md+ (verified in live Chrome).
+// Instead: a static always-visible block for md+ and a native <details>
+// accordion for mobile, each showing only at its own breakpoint — zero JS.
 function FooterColumn({ title, children }: FooterColumnProps) {
   return (
-    <details className="group border-border border-b py-4 md:border-0 md:py-0">
-      <summary className="font-heading focus-visible:ring-ring/50 flex cursor-pointer list-none items-center justify-between rounded-md text-base font-semibold outline-none focus-visible:ring-3 md:pointer-events-none md:cursor-default [&::-webkit-details-marker]:hidden">
-        {title}
-        <ChevronDown
-          aria-hidden="true"
-          className="size-4 transition-transform group-open:rotate-180 md:hidden"
-        />
-      </summary>
-      <div className="text-muted-foreground mt-3 hidden flex-col gap-2 text-sm group-open:flex md:flex">
-        {children}
+    <div className="border-border border-b py-4 md:border-0 md:py-0">
+      <div className="hidden md:block">
+        <h3 className="font-heading text-base font-semibold">{title}</h3>
+        <div className="text-muted-foreground mt-3 flex flex-col gap-2 text-sm">
+          {children}
+        </div>
       </div>
-    </details>
+      <details className="group md:hidden">
+        <summary className="font-heading focus-visible:ring-ring/50 flex cursor-pointer list-none items-center justify-between rounded-md text-base font-semibold outline-none focus-visible:ring-3 [&::-webkit-details-marker]:hidden">
+          {title}
+          <ChevronDown
+            aria-hidden="true"
+            className="size-4 transition-transform group-open:rotate-180"
+          />
+        </summary>
+        <div className="text-muted-foreground mt-3 flex flex-col gap-2 text-sm">
+          {children}
+        </div>
+      </details>
+    </div>
   )
 }
 
